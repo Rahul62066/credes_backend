@@ -23,7 +23,7 @@ export const postQueue = new Queue("post-publish", {
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 50 },
     attempts: 3,
-    backoff: { type: "exponential", delay: 2000 },
+    backoff: { type: "publish-platform-backoff" },
   },
 });
 
