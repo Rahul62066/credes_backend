@@ -10,7 +10,7 @@ describe("POST /api/content/generate", () => {
       .post("/api/content/generate")
       .send({
         idea: "Launch of new product",
-        postType: "announcement",
+        post_type: "announcement",
         platforms: ["twitter"],
         tone: "professional",
         language: "en",
@@ -28,7 +28,7 @@ describe("POST /api/content/generate", () => {
       .set("Authorization", "Bearer invalid-token")
       .send({
         idea: "",
-        postType: "announcement",
+        post_type: "announcement",
         platforms: ["twitter"],
         tone: "professional",
         model: "openai",
@@ -44,7 +44,7 @@ describe("POST /api/content/generate", () => {
       .set("Authorization", "Bearer invalid-token")
       .send({
         idea: "x".repeat(501),
-        postType: "announcement",
+        post_type: "announcement",
         platforms: ["twitter"],
         tone: "professional",
         model: "openai",
@@ -59,7 +59,7 @@ describe("POST /api/content/generate", () => {
       .set("Authorization", "Bearer invalid-token")
       .send({
         idea: "Some idea",
-        postType: "announcement",
+        post_type: "announcement",
         platforms: ["tiktok"],
         tone: "professional",
         model: "openai",
@@ -75,7 +75,7 @@ describe("POST /api/content/generate", () => {
       .set("Authorization", "Bearer invalid-token")
       .send({
         idea: "Some idea",
-        postType: "announcement",
+        post_type: "announcement",
         platforms: ["twitter"],
         tone: "professional",
         model: "gemini",
@@ -90,7 +90,7 @@ describe("POST /api/content/generate", () => {
       .set("Authorization", "Bearer invalid-token")
       .send({
         idea: "Some idea",
-        postType: "announcement",
+        post_type: "announcement",
         platforms: [],
         tone: "professional",
         model: "openai",

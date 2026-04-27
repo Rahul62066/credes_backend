@@ -29,7 +29,7 @@ const PLATFORM_CONSTRAINTS: Record<ContentPlatform, PlatformConstraint> = {
     maxChars: 1300,
     hashtagRange: [3, 5],
     style:
-      "Professional, insightful, value-driven. 800-1300 characters. " +
+      "Professional, insightful, value-driven. Force professional voice on LinkedIn even if a different global tone is requested. 800-1300 characters. " +
       "Open with a strong hook line. Use short paragraphs and line breaks for readability. " +
       "Include a clear call-to-action. End with 3-5 relevant hashtags on a separate line.",
   },
@@ -75,7 +75,8 @@ RULES:
 6. Respect each platform's character limit strictly.
 7. Content must be original, not generic filler text.
 8. Adapt writing style to the requested tone.
-9. Write in the requested language.`;
+9. Write in the requested language.
+10. Never include markdown fences or extra keys; return raw JSON only.`;
 }
 
 export function buildUserPrompt(params: {

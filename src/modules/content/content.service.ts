@@ -17,24 +17,27 @@ import { getAiClient } from "./content.ai";
 import { buildSystemPrompt, buildUserPrompt } from "./content.prompts";
 import {
   generateOutputSchema,
-  type GenerateContentInput,
+  type GenerateServiceInput,
   type GenerateOutput,
   type ContentPlatform,
 } from "./content.validation";
 
 // ── Platform character limits for validation ─────────
 
-const PLATFORM_LIMITS: Record<ContentPlatform, { maxChars: number; minHashtags: number; maxHashtags: number }> = {
-  twitter: { maxChars: 280, minHashtags: 2, maxHashtags: 3 },
-  linkedin: { maxChars: 1300, minHashtags: 3, maxHashtags: 5 },
-  instagram: { maxChars: 2200, minHashtags: 10, maxHashtags: 15 },
-  threads: { maxChars: 500, minHashtags: 2, maxHashtags: 4 },
+const PLATFORM_LIMITS: Record<
+  ContentPlatform,
+  { minChars: number; maxChars: number; minHashtags: number; maxHashtags: number }
+> = {
+  twitter: { minChars: 1, maxChars: 280, minHashtags: 2, maxHashtags: 3 },
+  linkedin: { minChars: 800, maxChars: 1300, minHashtags: 3, maxHashtags: 5 },
+  instagram: { minChars: 1, maxChars: 2200, minHashtags: 10, maxHashtags: 15 },
+  threads: { minChars: 1, maxChars: 500, minHashtags: 2, maxHashtags: 4 },
 };
 
 export class ContentService {
   constructor(private repo: ContentRepository = contentRepository) {}
 
-  async generate(userId: string, input: GenerateContentInput) {
+  async generate(userId: string, input: GenerateServiceInput) {
     // 1. Resolve API key
     const apiKey = await this.resolveApiKey(userId, input.model);
 
@@ -136,24 +139,29 @@ export class ContentService {
     parsed: Record<string, unknown>,
     requestedPlatforms: ContentPlatform[]
   ): Record<string, { content: string; hashtags: string[]; characterCount: number; warnings: string[] }> {
-    // Schema validation
+    // Schema validation must pass before any response is sent
     const zodResult = generateOutputSchema.safeParse(parsed);
+    if (!zodResult.success) {
+      logger.error("AI output schema validation failed", {
+        issues: zodResult.error.issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+      });
+      throw new AppError("AI returned invalid output format. Please try again.", 502);
+    }
 
-    // Even if Zod fails, try to extract what we can
-    const output: GenerateOutput = zodResult.success
-      ? zodResult.data
-      : (parsed as GenerateOutput);
+    const output: GenerateOutput = zodResult.data;
 
     const result: Record<
       string,
       { content: string; hashtags: string[]; characterCount: number; warnings: string[] }
     > = {};
+    const violations: string[] = [];
 
     for (const platform of requestedPlatforms) {
       const data = output[platform];
       const warnings: string[] = [];
 
       if (!data || !data.content) {
+        violations.push(`${platform}: missing generated content`);
         result[platform] = {
           content: "",
           hashtags: [],
@@ -173,23 +181,28 @@ export class ContentService {
 
       // Check character limits
       const limits = PLATFORM_LIMITS[platform];
+      if (actualLength < limits.minChars) {
+        const msg = `Content below ${platform} minimum: ${actualLength}/${limits.minChars} chars`;
+        warnings.push(msg);
+        violations.push(`${platform}: ${msg}`);
+      }
       if (actualLength > limits.maxChars) {
-        warnings.push(
-          `Content exceeds ${platform} limit: ${actualLength}/${limits.maxChars} chars`
-        );
+        const msg = `Content exceeds ${platform} limit: ${actualLength}/${limits.maxChars} chars`;
+        warnings.push(msg);
+        violations.push(`${platform}: ${msg}`);
       }
 
       // Check hashtag count
       const hashtagCount = data.hashtags?.length || 0;
       if (hashtagCount < limits.minHashtags) {
-        warnings.push(
-          `Too few hashtags for ${platform}: ${hashtagCount} (min ${limits.minHashtags})`
-        );
+        const msg = `Too few hashtags for ${platform}: ${hashtagCount} (min ${limits.minHashtags})`;
+        warnings.push(msg);
+        violations.push(`${platform}: ${msg}`);
       }
       if (hashtagCount > limits.maxHashtags) {
-        warnings.push(
-          `Too many hashtags for ${platform}: ${hashtagCount} (max ${limits.maxHashtags})`
-        );
+        const msg = `Too many hashtags for ${platform}: ${hashtagCount} (max ${limits.maxHashtags})`;
+        warnings.push(msg);
+        violations.push(`${platform}: ${msg}`);
       }
 
       result[platform] = {
@@ -198,6 +211,15 @@ export class ContentService {
         characterCount: actualLength,
         warnings,
       };
+    }
+
+    // Enforce required platform constraints before response
+    if (violations.length > 0) {
+      logger.warn("AI content constraint violations", { violations });
+      throw new AppError(
+        "AI output did not meet platform constraints. Please try again.",
+        502
+      );
     }
 
     return result;

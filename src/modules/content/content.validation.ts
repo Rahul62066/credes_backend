@@ -40,7 +40,7 @@ export const generateContentSchema = z.object({
     .string()
     .min(1, "Idea is required")
     .max(500, "Idea must be 500 characters or less"),
-  postType: postTypeEnum,
+  post_type: postTypeEnum,
   platforms: z.array(contentPlatformEnum).min(1, "At least one platform is required"),
   tone: toneEnum,
   language: languageEnum.default("en"),
@@ -64,6 +64,26 @@ export const generateOutputSchema = z.record(
   contentPlatformEnum,
   platformContentOutputSchema
 );
+
+export interface GenerateServiceInput {
+  idea: string;
+  postType: PostType;
+  platforms: ContentPlatform[];
+  tone: ToneType;
+  language: z.infer<typeof languageEnum>;
+  model: z.infer<typeof modelEnum>;
+}
+
+export function toGenerateServiceInput(input: GenerateContentInput): GenerateServiceInput {
+  return {
+    idea: input.idea,
+    postType: input.post_type,
+    platforms: input.platforms,
+    tone: input.tone,
+    language: input.language,
+    model: input.model,
+  };
+}
 
 export type PlatformContentOutput = z.infer<typeof platformContentOutputSchema>;
 export type GenerateOutput = z.infer<typeof generateOutputSchema>;

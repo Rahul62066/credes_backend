@@ -4,7 +4,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../../utils/apiResponse";
 import { contentService, ContentService } from "./content.service";
-import type { GenerateContentInput } from "./content.validation";
+import { toGenerateServiceInput, type GenerateContentInput } from "./content.validation";
 
 export class ContentController {
   constructor(private service: ContentService = contentService) {}
@@ -13,7 +13,7 @@ export class ContentController {
   generate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const input = req.body as GenerateContentInput;
-      const result = await this.service.generate(req.user!.userId, input);
+      const result = await this.service.generate(req.user!.userId, toGenerateServiceInput(input));
 
       ApiResponse.success(res, {
         statusCode: 200,
