@@ -1,29 +1,29 @@
 /**
  * Content module — Controller layer.
  */
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../../utils/apiResponse";
+import { contentService, ContentService } from "./content.service";
+import type { GenerateContentInput } from "./content.validation";
 
 export class ContentController {
-  async create(_req: Request, res: Response): Promise<void> {
-    ApiResponse.success(res, { statusCode: 201, message: "Create content — not implemented yet" });
-  }
+  constructor(private service: ContentService = contentService) {}
 
-  async getById(_req: Request, res: Response): Promise<void> {
-    ApiResponse.success(res, { message: "Get content — not implemented yet" });
-  }
+  // POST /api/content/generate
+  generate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const input = req.body as GenerateContentInput;
+      const result = await this.service.generate(req.user!.userId, input);
 
-  async list(_req: Request, res: Response): Promise<void> {
-    ApiResponse.success(res, { message: "List content — not implemented yet" });
-  }
-
-  async update(_req: Request, res: Response): Promise<void> {
-    ApiResponse.success(res, { message: "Update content — not implemented yet" });
-  }
-
-  async delete(_req: Request, res: Response): Promise<void> {
-    ApiResponse.success(res, { message: "Delete content — not implemented yet" });
-  }
+      ApiResponse.success(res, {
+        statusCode: 200,
+        message: "Content generated successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export const contentController = new ContentController();
