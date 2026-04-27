@@ -9,16 +9,14 @@ describe("GET /health", () => {
     const res = await request(app).get("/health");
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({
-      success: true,
-      message: "Postly API is healthy 🚀",
-      data: {
-        status: "ok",
-      },
-    });
+    expect(res.body.error).toBeNull();
+    expect(res.body.data).toMatchObject({ status: "ok" });
     expect(res.body.data.uptime).toBeDefined();
     expect(res.body.data.timestamp).toBeDefined();
     expect(res.body.data.environment).toBeDefined();
+    expect(res.body.meta).toMatchObject({
+      message: "Postly API is healthy 🚀",
+    });
   });
 });
 
@@ -27,8 +25,9 @@ describe("GET /unknown-route", () => {
     const res = await request(app).get("/this-does-not-exist");
 
     expect(res.status).toBe(404);
-    expect(res.body).toMatchObject({
-      success: false,
+    expect(res.body.data).toBeNull();
+    expect(res.body.error).toMatchObject({
+      code: 404,
       message: "Route not found",
     });
   });

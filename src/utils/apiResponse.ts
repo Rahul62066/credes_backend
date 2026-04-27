@@ -1,5 +1,7 @@
 /**
  * Standardised API response helpers.
+ *
+ * Response envelope: { data, meta, error }
  */
 import { Response } from "express";
 
@@ -13,48 +15,53 @@ interface SuccessPayload<T> {
 interface ErrorPayload {
   statusCode?: number;
   message?: string;
-  errors?: unknown;
+  details?: unknown;
 }
 
 export class ApiResponse {
   /**
    * Send a success response.
+   *
+   * { data: T | null, meta: { message, ...extra } | null, error: null }
    */
   static success<T>(res: Response, payload: SuccessPayload<T> = {}): void {
-    const { statusCode = 200, message = "Success", data, meta } = payload;
+    const { statusCode = 200, message, data, meta } = payload;
 
-    const body: Record<string, unknown> = {
-      success: true,
-      message,
+    const metaBlock: Record<string, unknown> | null =
+      message || meta ? { ...(message && { message }), ...meta } : null;
+
+    res.status(statusCode).json({
       data: data ?? null,
-    };
-
-    if (meta) {
-      body.meta = meta;
-    }
-
-    res.status(statusCode).json(body);
+      meta: metaBlock,
+      error: null,
+    });
   }
 
   /**
    * Send an error response.
+   *
+   * { data: null, meta: null, error: { code, message, details? } }
    */
   static error(res: Response, payload: ErrorPayload = {}): void {
     const {
       statusCode = 500,
       message = "Internal Server Error",
-      errors,
+      details,
     } = payload;
 
-    const body: Record<string, unknown> = {
-      success: false,
+    const errorBlock: Record<string, unknown> = {
+      code: statusCode,
       message,
     };
 
-    if (errors) {
-      body.errors = errors;
+    if (details) {
+      errorBlock.details = details;
     }
 
-    res.status(statusCode).json(body);
+    res.status(statusCode).json({
+      data: null,
+      meta: null,
+      error: errorBlock,
+    });
   }
 }

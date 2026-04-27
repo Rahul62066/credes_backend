@@ -3,7 +3,7 @@
  * Validates request body, query, or params against a Zod schema.
  */
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema, ZodError } from "zod";
+import { ZodSchema } from "zod";
 import { ApiResponse } from "../utils/apiResponse";
 
 type ValidationTarget = "body" | "query" | "params";
@@ -13,14 +13,14 @@ type ValidationTarget = "body" | "query" | "params";
  * property against the given Zod schema.
  *
  * @example
- * router.post("/login", validate(loginSchema, "body"), controller.login);
+ * router.post("/login", validate(loginSchema), controller.login);
  */
 export function validate(schema: ZodSchema, target: ValidationTarget = "body") {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req[target]);
 
     if (!result.success) {
-      const errors = result.error.issues.map((issue) => ({
+      const details = result.error.issues.map((issue) => ({
         field: issue.path.join("."),
         message: issue.message,
       }));
@@ -28,7 +28,7 @@ export function validate(schema: ZodSchema, target: ValidationTarget = "body") {
       ApiResponse.error(res, {
         statusCode: 422,
         message: "Validation failed",
-        errors,
+        details,
       });
       return;
     }

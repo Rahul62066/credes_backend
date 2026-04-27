@@ -21,6 +21,9 @@ export const env = {
   ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || "7d",
 
+  // Encryption (AES-256-GCM)
+  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || "",
+
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
 

@@ -13,6 +13,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
+  // Operational errors we threw intentionally
   if (err instanceof AppError) {
     ApiResponse.error(res, {
       statusCode: err.statusCode,
@@ -21,6 +22,7 @@ export function errorHandler(
     return;
   }
 
+  // Unexpected / programmer errors
   console.error("🔥 Unhandled Error:", err);
 
   ApiResponse.error(res, {

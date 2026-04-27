@@ -47,13 +47,11 @@ app.get("/health", (_req, res) => {
 });
 
 // ── API routes ──────────────────────────────────────
-const API_PREFIX = "/api/v1";
-
-app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/users`, userRoutes);
-app.use(`${API_PREFIX}/content`, contentRoutes);
-app.use(`${API_PREFIX}/posts`, postsRoutes);
-app.use(`${API_PREFIX}/bot`, botRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/content", contentRoutes);
+app.use("/api/posts", postsRoutes);
+app.use("/api/bot", botRoutes);
 
 // ── 404 handler ─────────────────────────────────────
 app.use((_req, res) => {

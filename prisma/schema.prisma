@@ -1,5 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// ─────────────────────────────────────────────────────
+// Postly — Prisma Schema
+// ─────────────────────────────────────────────────────
 
 generator client {
   provider = "prisma-client-js"
@@ -10,16 +11,174 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─── Models ─────────────────────────────────────────
-// Models will be added here as features are implemented.
-// Example:
-//
-// model User {
-//   id        String   @id @default(cuid())
-//   email     String   @unique
-//   password  String
-//   createdAt DateTime @default(now()) @map("created_at")
-//   updatedAt DateTime @updatedAt @map("updated_at")
-//
-//   @@map("users")
-// }
+// ─── Enums ──────────────────────────────────────────
+
+enum Platform {
+  TWITTER
+  LINKEDIN
+  FACEBOOK
+  INSTAGRAM
+  THREADS
+}
+
+enum PostType {
+  SHORT       // tweet / short post
+  LONG        // article / blog-style
+  THREAD      // multi-part thread
+  POLL        // poll-type content
+  CAROUSEL    // carousel / slide post
+}
+
+enum Tone {
+  PROFESSIONAL
+  CASUAL
+  HUMOROUS
+  INSPIRATIONAL
+  EDUCATIONAL
+  STORYTELLING
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PROCESSING
+  PUBLISHED
+  PARTIALLY_PUBLISHED
+  FAILED
+  CANCELLED
+}
+
+enum PlatformPostStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  SKIPPED
+}
+
+// ─── User ───────────────────────────────────────────
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  name            String?
+  bio             String?
+  defaultTone     Tone?    @default(PROFESSIONAL) @map("default_tone")
+  defaultLanguage String   @default("en") @map("default_language")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  refreshTokens  RefreshToken[]
+  socialAccounts SocialAccount[]
+  aiKey          AiKey?
+  posts          Post[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ─── Refresh Token ──────────────────────────────────
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique @map("token_hash")
+  userId    String    @map("user_id")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ─── Social Account ────────────────────────────────
+
+model SocialAccount {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  platform        Platform
+  accessTokenEnc  String   @map("access_token_enc")
+  refreshTokenEnc String?  @map("refresh_token_enc")
+  handle          String?
+  connectedAt     DateTime @default(now()) @map("connected_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform]) // one account per platform per user
+  @@index([userId])
+  @@index([platform])
+  @@map("social_accounts")
+}
+
+// ─── AI Key ─────────────────────────────────────────
+
+model AiKey {
+  id              String   @id @default(cuid())
+  userId          String   @unique @map("user_id")
+  openaiKeyEnc    String?  @map("openai_key_enc")
+  anthropicKeyEnc String?  @map("anthropic_key_enc")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_keys")
+}
+
+// ─── Post ───────────────────────────────────────────
+
+model Post {
+  id        String     @id @default(cuid())
+  userId    String     @map("user_id")
+  idea      String     @db.Text
+  postType  PostType   @default(SHORT) @map("post_type")
+  tone      Tone       @default(PROFESSIONAL)
+  language  String     @default("en")
+  modelUsed String?    @map("model_used")
+  publishAt DateTime?  @map("publish_at")
+  status    PostStatus @default(DRAFT)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformPosts PlatformPost[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([publishAt])
+  @@index([userId, status])
+  @@map("posts")
+}
+
+// ─── Platform Post ──────────────────────────────────
+
+model PlatformPost {
+  id           String             @id @default(cuid())
+  postId       String             @map("post_id")
+  platform     Platform
+  content      String             @db.Text
+  status       PlatformPostStatus @default(PENDING)
+  publishedAt  DateTime?          @map("published_at")
+  errorMessage String?            @map("error_message")
+  attempts     Int                @default(0)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, platform]) // one entry per platform per post
+  @@index([postId])
+  @@index([platform])
+  @@index([status])
+  @@map("platform_posts")
+}

@@ -1,3 +1,4 @@
 export { userRoutes } from "./user.routes";
-export { userService } from "./user.service";
-export { userController } from "./user.controller";
+export { userService, UserService } from "./user.service";
+export { userController, UserController } from "./user.controller";
+export { userRepository, UserRepository } from "./user.repository";
