@@ -6,6 +6,7 @@ import { app } from "./app";
 import { env } from "./config/env";
 import { disconnectPrisma } from "./config/prisma";
 import { redis } from "./config/redis";
+import { botService } from "./modules/bot";
 import { logger } from "./utils/logger";
 
 async function bootstrap(): Promise<void> {
@@ -18,6 +19,8 @@ async function bootstrap(): Promise<void> {
   if (!env.isTest) {
     await import("./workers");
     logger.info("👷 Workers initialised");
+    await botService.initialize();
+    logger.info("🤖 Telegram bot initialised");
   }
 
   // ── Graceful shutdown ─────────────────────────────

@@ -3,11 +3,9 @@
  */
 import { Router } from "express";
 import { botController } from "./bot.controller";
-import { authGuard } from "../../middlewares/authGuard";
 
 const router = Router();
 
-router.post("/trigger", authGuard, botController.trigger);
-router.get("/status/:id", authGuard, botController.getStatus);
+router.post("/telegram/webhook/:secret", botController.telegramWebhook);
 
 export { router as botRoutes };

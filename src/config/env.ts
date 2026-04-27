@@ -35,6 +35,11 @@ export const env = {
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
 
+  // Telegram bot
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
+  TELEGRAM_WEBHOOK_URL: process.env.TELEGRAM_WEBHOOK_URL || "",
+  TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET || "",
+
   // CORS
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:3000",
 
