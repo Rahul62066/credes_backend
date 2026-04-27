@@ -7,8 +7,9 @@
 import { Worker, Job } from "bullmq";
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
-import { PlatformPostStatus, PostStatus } from "../../generated/prisma";
+import { Platform, PlatformPostStatus, PostStatus } from "../../generated/prisma";
 import { postsRepository } from "../modules/posts/posts.repository";
+import { platformPublisherService } from "../modules/posts/platformPublisher.service";
 
 const connectionOpts = {
   host: env.REDIS_HOST,
@@ -56,10 +57,25 @@ export const postWorker = new Worker(
       throw new Error("Platform post not found");
     }
 
-    const content = platformPost.content.toLowerCase();
-    if (content.includes("#forcefail") || content.includes("[force-fail]")) {
-      throw new Error(`Simulated ${platform} publish failure for ${userId}`);
+    const platformEnum = thisPlatform(platform);
+    const socialAccount = await postsRepository.getUserSocialAccount(userId, platformEnum);
+    if (!socialAccount) {
+      throw new Error(
+        `No connected ${platform} account found for user. Connect the account and retry.`
+      );
     }
+
+    await platformPublisherService.publish(platformEnum, {
+      userId,
+      postId,
+      platformPostId,
+      content: platformPost.content,
+      socialAccount: {
+        accessTokenEnc: socialAccount.accessTokenEnc,
+        refreshTokenEnc: socialAccount.refreshTokenEnc,
+        handle: socialAccount.handle,
+      },
+    });
 
     await postsRepository.updatePlatformPostStatus({
       platformPostId,
@@ -136,3 +152,12 @@ botWorker.on("failed", (job, err) => {
 });
 
 logger.info("👷 BullMQ workers started");
+
+function thisPlatform(platform: string): Platform {
+  const value = platform.toLowerCase();
+  if (value === "twitter") return Platform.TWITTER;
+  if (value === "linkedin") return Platform.LINKEDIN;
+  if (value === "instagram") return Platform.INSTAGRAM;
+  if (value === "threads") return Platform.THREADS;
+  throw new Error(`Unsupported platform in job: ${platform}`);
+}
