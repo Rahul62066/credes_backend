@@ -106,6 +106,17 @@ export class PostsRepository {
     });
   }
 
+  async getUserSocialAccount(userId: string, platform: Platform) {
+    return prisma.socialAccount.findUnique({
+      where: {
+        userId_platform: {
+          userId,
+          platform,
+        },
+      },
+    });
+  }
+
   async updatePlatformPostStatus(params: {
     platformPostId: string;
     status: PlatformPostStatus;
