@@ -24,6 +24,10 @@ export const env = {
   // Encryption (AES-256-GCM)
   ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || "",
 
+  // AI API keys (platform fallback)
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
+  ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
 
