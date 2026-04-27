@@ -75,7 +75,7 @@ const MODEL_OPTIONS: Array<{ label: string; value: BotModel }> = [
 ];
 
 function sessionKey(chatId: number): string {
-  return `${SESSION_KEY_PREFIX}:${chatId}`;
+  return `${SESSION_KEY_PREFIX}:{${chatId}}`;
 }
 
 export class BotService {
