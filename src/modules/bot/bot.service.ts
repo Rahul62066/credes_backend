@@ -94,13 +94,17 @@ export class BotService {
     this.registerHandlers();
     this.webhookHandler = webhookCallback(this.bot, "express");
 
-    await this.bot.api.setMyCommands([
-      { command: "start", description: "Link your chat and begin" },
-      { command: "post", description: "Create and publish a new post" },
-      { command: "status", description: "Show your last 5 posts" },
-      { command: "accounts", description: "Show connected social accounts" },
-      { command: "help", description: "List all commands" },
-    ]);
+    try {
+      await this.bot.api.setMyCommands([
+        { command: "start", description: "Link your chat and begin" },
+        { command: "post", description: "Create and publish a new post" },
+        { command: "status", description: "Show your last 5 posts" },
+        { command: "accounts", description: "Show connected social accounts" },
+        { command: "help", description: "List all commands" },
+      ]);
+    } catch (error) {
+      logger.warn("Telegram command registration failed — continuing without it", error);
+    }
 
     if (env.isProd) {
       if (!env.TELEGRAM_WEBHOOK_URL || !env.TELEGRAM_WEBHOOK_SECRET) {
@@ -111,8 +115,12 @@ export class BotService {
       }
 
       const webhookUrl = `${env.TELEGRAM_WEBHOOK_URL.replace(/\/+$/, "")}/api/bot/telegram/webhook/${env.TELEGRAM_WEBHOOK_SECRET}`;
-      await this.bot.api.setWebhook(webhookUrl);
-      logger.info("Telegram webhook configured", { webhookUrl });
+      try {
+        await this.bot.api.setWebhook(webhookUrl);
+        logger.info("Telegram webhook configured", { webhookUrl });
+      } catch (error) {
+        logger.warn("Telegram webhook setup failed — continuing without webhook", error);
+      }
     }
   }
 
