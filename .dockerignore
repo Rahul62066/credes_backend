@@ -1,7 +1,6 @@
 node_modules
 dist
 generated
-.env
 .git
 *.md
 docker-compose.yml
