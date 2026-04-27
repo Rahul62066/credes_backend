@@ -18,6 +18,7 @@ import { userRoutes } from "./modules/user";
 import { contentRoutes } from "./modules/content";
 import { postsRoutes } from "./modules/posts";
 import { botRoutes } from "./modules/bot";
+import { dashboardRoutes } from "./modules/dashboard";
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/bot", botRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ── 404 handler ─────────────────────────────────────
 app.use((_req, res) => {
