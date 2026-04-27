@@ -28,6 +28,10 @@ export const env = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
 
+  // Social platform APIs
+  TWITTER_API_BASE_URL: process.env.TWITTER_API_BASE_URL || "https://api.twitter.com",
+  LINKEDIN_API_BASE_URL: process.env.LINKEDIN_API_BASE_URL || "https://api.linkedin.com",
+
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
 
