@@ -7,7 +7,7 @@ import { env } from "./env";
  * - redis://[:password@]host:port
  * - Separate REDIS_HOST and REDIS_PORT env vars
  */
-function parseRedisConfig(): { host: string; port: number; password?: string } {
+export function getRedisConfig(): { host: string; port: number; password?: string } {
   const host = env.REDIS_HOST;
 
   // Check if REDIS_HOST is a full URL (starts with redis://)
@@ -32,7 +32,7 @@ function parseRedisConfig(): { host: string; port: number; password?: string } {
   };
 }
 
-const redisConfig = parseRedisConfig();
+const redisConfig = getRedisConfig();
 
 /**
  * Shared Redis connection instance.

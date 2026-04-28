@@ -11,11 +11,9 @@ import { Platform, PlatformPostStatus, PostStatus } from "../../generated/prisma
 import { postsRepository } from "../modules/posts/posts.repository";
 import { platformPublisherService } from "../modules/posts/platformPublisher.service";
 
-const connectionOpts = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD,
-};
+import { getRedisConfig } from "../config/redis";
+
+const connectionOpts = getRedisConfig();
 
 /**
  * Post-publish worker — processes scheduled post publishing jobs.

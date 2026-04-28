@@ -7,11 +7,9 @@
 import { Queue } from "bullmq";
 import { env } from "../../config/env";
 
-const connectionOpts = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD,
-};
+import { getRedisConfig } from "../../config/redis";
+
+const connectionOpts = getRedisConfig();
 
 /**
  * Post-publishing queue — processes scheduled posts.
