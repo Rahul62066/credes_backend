@@ -107,14 +107,7 @@ export class BotService {
       logger.warn("Telegram command registration failed — continuing without it", error);
     }
 
-    if (env.isProd) {
-      if (!env.TELEGRAM_WEBHOOK_URL || !env.TELEGRAM_WEBHOOK_SECRET) {
-        logger.warn(
-          "Telegram webhook not configured. Set TELEGRAM_WEBHOOK_URL and TELEGRAM_WEBHOOK_SECRET."
-        );
-        return;
-      }
-
+    if (env.TELEGRAM_WEBHOOK_URL && env.TELEGRAM_WEBHOOK_SECRET) {
       const webhookUrl = `${env.TELEGRAM_WEBHOOK_URL.replace(/\/+$/, "")}/api/bot/telegram/webhook/${env.TELEGRAM_WEBHOOK_SECRET}`;
       try {
         await this.bot.api.setWebhook(webhookUrl);
@@ -122,6 +115,10 @@ export class BotService {
       } catch (error) {
         logger.warn("Telegram webhook setup failed — continuing without webhook", error);
       }
+    } else {
+      logger.warn(
+        "Telegram webhook not configured. Set TELEGRAM_WEBHOOK_URL and TELEGRAM_WEBHOOK_SECRET."
+      );
     }
   }
 
