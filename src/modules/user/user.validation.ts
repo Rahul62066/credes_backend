@@ -52,8 +52,9 @@ export const updateAiKeysSchema = z
   .object({
     openaiKey: z.string().min(1).optional(),
     anthropicKey: z.string().min(1).optional(),
+    openrouterKey: z.string().min(1).optional(),
   })
-  .refine((data) => data.openaiKey || data.anthropicKey, {
+  .refine((data) => data.openaiKey || data.anthropicKey || data.openrouterKey, {
     message: "At least one API key is required",
   });
 

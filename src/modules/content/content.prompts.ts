@@ -76,7 +76,22 @@ RULES:
 7. Content must be original, not generic filler text.
 8. Adapt writing style to the requested tone.
 9. Write in the requested language.
-10. Never include markdown fences or extra keys; return raw JSON only.`;
+10. Never include markdown fences or extra keys; return raw JSON only.
+
+EXAMPLE (must follow exactly):
+{
+  "twitter": {
+    "content": "Launching our AI startup today 🚀 Check out how we scale content. #ai #startup",
+    "hashtags": ["ai","startup"],
+    "characterCount": 85
+  },
+  "linkedin": {
+    "content": "Today we launch our AI startup. We built a platform to scale content creation... #ai #product",
+    "hashtags": ["ai","product"],
+    "characterCount": 220
+  }
+}
+Return JSON that matches the schema and the example shape exactly.`;
 }
 
 export function buildUserPrompt(params: {
@@ -123,5 +138,6 @@ Each key maps to:
   "content": "<full post text including hashtags>",
   "hashtags": ["tag1", "tag2"],
   "characterCount": <integer>
-}`;
+}
+Provide one concrete example output that follows the schema precisely (use realistic text and correct character counts).`;
 }

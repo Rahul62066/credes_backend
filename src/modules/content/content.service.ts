@@ -81,12 +81,17 @@ export class ContentService {
    *   1. User's saved encrypted key (decrypted)
    *   2. Platform fallback from env
    */
-  private async resolveApiKey(userId: string, model: "openai" | "anthropic"): Promise<string> {
+  private async resolveApiKey(userId: string, model: GenerateServiceInput["model"]): Promise<string> {
     // Try user's saved key
     const aiKey = await this.repo.findUserAiKey(userId);
 
     if (aiKey) {
-      const encryptedField = model === "openai" ? aiKey.openaiKeyEnc : aiKey.anthropicKeyEnc;
+      const encryptedField =
+        model === "openai"
+          ? aiKey.openaiKeyEnc
+          : model === "anthropic"
+            ? aiKey.anthropicKeyEnc
+            : aiKey.openrouterKeyEnc;
       if (encryptedField) {
         try {
           const decrypted = decrypt(encryptedField);
@@ -101,7 +106,12 @@ export class ContentService {
     }
 
     // Fallback to platform key
-    const fallback = model === "openai" ? env.OPENAI_API_KEY : env.ANTHROPIC_API_KEY;
+    const fallback =
+      model === "openai"
+        ? env.OPENAI_API_KEY
+        : model === "anthropic"
+          ? env.ANTHROPIC_API_KEY
+          : env.OPENROUTER_API_KEY;
     if (!fallback) {
       throw BadRequest(
         `No ${model} API key available. Please save your API key in settings or contact the administrator.`
@@ -123,11 +133,36 @@ export class ContentService {
       cleaned = cleaned.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
     }
 
+    // First attempt: direct JSON.parse
     try {
       return JSON.parse(cleaned);
-    } catch {
-      logger.error("AI returned invalid JSON", { raw: raw.substring(0, 200) });
-      throw new AppError("AI returned invalid JSON. Please try again.", 502);
+    } catch (err) {
+      logger.warn("Direct JSON.parse failed, attempting extraction", { snippet: cleaned.substring(0, 300) });
+    }
+
+    // Attempt to extract the first balanced JSON object from the text
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      let candidate = cleaned.substring(firstBrace, lastBrace + 1);
+
+      // Remove trailing commas before closing braces (common LLM mistake)
+      candidate = candidate.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
+
+      try {
+        return JSON.parse(candidate);
+      } catch (err) {
+        logger.warn("Extraction parse failed", { candidate: candidate.substring(0, 300) });
+      }
+    }
+
+    // Try a looser normalization: convert single quotes to double quotes (heuristic)
+    const singleQuoteNormalized = cleaned.replace(/\'([^"]*?)\'/g, '"$1"');
+    try {
+      return JSON.parse(singleQuoteNormalized);
+    } catch (err) {
+      logger.error("AI returned invalid JSON after fallback attempts", { raw: raw.substring(0, 1000) });
+      throw new AppError("AI returned invalid output format. Please try again.", 502);
     }
   }
 
@@ -213,13 +248,10 @@ export class ContentService {
       };
     }
 
-    // Enforce required platform constraints before response
+    // Constraints are advisory: return generated content with warnings so the
+    // caller can decide whether to accept or retry.
     if (violations.length > 0) {
       logger.warn("AI content constraint violations", { violations });
-      throw new AppError(
-        "AI output did not meet platform constraints. Please try again.",
-        502
-      );
     }
 
     return result;

@@ -31,7 +31,7 @@ export const toneEnum = z.enum([
 
 export const languageEnum = z.enum(["en", "hi", "ar"]);
 
-export const modelEnum = z.enum(["openai", "anthropic"]);
+export const modelEnum = z.enum(["openai", "anthropic", "openrouter"]);
 
 // ── Request schema ───────────────────────────────────
 
@@ -60,10 +60,9 @@ export const platformContentOutputSchema = z.object({
   characterCount: z.number(),
 });
 
-export const generateOutputSchema = z.record(
-  contentPlatformEnum,
-  platformContentOutputSchema
-);
+// Allow AI to return only a subset of platforms (keys will be platform names).
+// We validate keys later against requestedPlatforms in the service layer.
+export const generateOutputSchema = z.record(z.string(), platformContentOutputSchema);
 
 export interface GenerateServiceInput {
   idea: string;

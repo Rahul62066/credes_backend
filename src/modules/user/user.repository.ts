@@ -148,6 +148,7 @@ export class UserRepository {
     userId: string;
     openaiKeyEnc?: string | null;
     anthropicKeyEnc?: string | null;
+    openrouterKeyEnc?: string | null;
   }) {
     return prisma.aiKey.upsert({
       where: { userId: data.userId },
@@ -158,11 +159,15 @@ export class UserRepository {
         ...(data.anthropicKeyEnc !== undefined && {
           anthropicKeyEnc: data.anthropicKeyEnc,
         }),
+        ...(data.openrouterKeyEnc !== undefined && {
+          openrouterKeyEnc: data.openrouterKeyEnc,
+        }),
       },
       create: {
         userId: data.userId,
         openaiKeyEnc: data.openaiKeyEnc ?? null,
         anthropicKeyEnc: data.anthropicKeyEnc ?? null,
+        openrouterKeyEnc: data.openrouterKeyEnc ?? null,
       },
     });
   }

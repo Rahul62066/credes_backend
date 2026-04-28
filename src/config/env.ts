@@ -27,6 +27,7 @@ export const env = {
   // AI API keys (platform fallback)
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || "",
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
 
   // Social platform APIs
   TWITTER_API_BASE_URL: process.env.TWITTER_API_BASE_URL || "https://api.twitter.com",

@@ -1,7 +1,7 @@
 /**
  * Content module — AI provider abstraction.
  *
- * Wraps OpenAI and Anthropic SDKs behind a unified interface.
+ * Wraps OpenAI, Anthropic, and OpenRouter SDK access behind a unified interface.
  */
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
@@ -17,6 +17,8 @@ export interface AiGenerateParams {
 export interface AiClient {
   generate(params: AiGenerateParams): Promise<string>;
 }
+
+export type AiProvider = "openai" | "anthropic" | "openrouter";
 
 // ── OpenAI ───────────────────────────────────────────
 
@@ -55,6 +57,51 @@ export class OpenAIClient implements AiClient {
         status === 401
           ? "Invalid OpenAI API key"
           : `OpenAI error: ${msg}`,
+        status >= 400 && status < 500 ? status : 502
+      );
+    }
+  }
+}
+
+// ── OpenRouter ──────────────────────────────────────
+
+export class OpenRouterClient implements AiClient {
+  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<string> {
+    try {
+      const client = new OpenAI({
+        apiKey,
+        baseURL: "https://openrouter.ai/api/v1",
+      });
+
+      const response = await client.chat.completions.create({
+        model: "openai/gpt-4o-mini",
+        temperature: 0.7,
+        max_tokens: 4096,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+      const text = response.choices[0]?.message?.content;
+      if (!text) {
+        throw new AppError("OpenRouter returned empty response", 502);
+      }
+
+      logger.debug("OpenRouter raw response", { length: text.length });
+      return text;
+    } catch (err: any) {
+      if (err instanceof AppError) throw err;
+
+      const status = err?.status || err?.response?.status || 502;
+      const msg = err?.message || "OpenRouter API request failed";
+
+      logger.error("OpenRouter API error", { status, message: msg });
+      throw new AppError(
+        status === 401
+          ? "Invalid OpenRouter API key"
+          : `OpenRouter error: ${msg}`,
         status >= 400 && status < 500 ? status : 502
       );
     }
@@ -104,8 +151,9 @@ export class AnthropicClient implements AiClient {
 const clients: Record<string, AiClient> = {
   openai: new OpenAIClient(),
   anthropic: new AnthropicClient(),
+  openrouter: new OpenRouterClient(),
 };
 
-export function getAiClient(model: "openai" | "anthropic"): AiClient {
+export function getAiClient(model: AiProvider): AiClient {
   return clients[model];
 }

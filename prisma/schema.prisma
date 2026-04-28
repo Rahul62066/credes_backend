@@ -125,6 +125,7 @@ model AiKey {
   userId          String   @unique @map("user_id")
   openaiKeyEnc    String?  @map("openai_key_enc")
   anthropicKeyEnc String?  @map("anthropic_key_enc")
+  openrouterKeyEnc String? @map("openrouter_key_enc")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations

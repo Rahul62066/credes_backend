@@ -24,7 +24,7 @@ export const publishPostSchema = z.object({
   platforms: z.array(platformEnum).min(1, "At least one platform is required"),
   platformContents: z.record(platformEnum, platformContentSchema),
   language: z.enum(["en", "hi", "ar"]).default("en"),
-  model: z.enum(["openai", "anthropic"]).optional(),
+  model: z.enum(["openai", "anthropic", "openrouter"]).optional(),
 });
 
 export const schedulePostSchema = publishPostSchema.extend({
