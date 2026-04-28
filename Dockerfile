@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+COPY prisma.config.ts ./
 COPY prisma ./prisma
 RUN npx prisma generate
 
@@ -23,6 +24,7 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 
+COPY prisma.config.ts ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/generated ./generated
 COPY prisma ./prisma
