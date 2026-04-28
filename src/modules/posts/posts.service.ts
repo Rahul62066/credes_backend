@@ -236,7 +236,7 @@ export class PostsService {
         };
 
         return postQueue.add("publish-platform-post", data, {
-          jobId: `${postId}:${platformPost.id}`,
+          jobId: `${postId}__${platformPost.id}`,
           attempts: 3,
           delay: delayMs,
           backoff: {
