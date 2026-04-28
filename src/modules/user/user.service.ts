@@ -78,7 +78,7 @@ export class UserService {
   async getAiKeys(userId: string) {
     const aiKey = await this.repo.findAiKey(userId);
     if (!aiKey) {
-      return { openaiKey: null, anthropicKey: null };
+      return { openaiKey: null, anthropicKey: null, openrouterKey: null };
     }
 
     return {
@@ -87,6 +87,9 @@ export class UserService {
         : null,
       anthropicKey: aiKey.anthropicKeyEnc
         ? maskSecret(decrypt(aiKey.anthropicKeyEnc))
+        : null,
+      openrouterKey: aiKey.openrouterKeyEnc
+        ? maskSecret(decrypt(aiKey.openrouterKeyEnc))
         : null,
       updatedAt: aiKey.updatedAt,
     };
@@ -97,6 +100,7 @@ export class UserService {
       userId: string;
       openaiKeyEnc?: string | null;
       anthropicKeyEnc?: string | null;
+      openrouterKeyEnc?: string | null;
     } = { userId };
 
     if (input.openaiKey !== undefined) {
@@ -104,6 +108,9 @@ export class UserService {
     }
     if (input.anthropicKey !== undefined) {
       data.anthropicKeyEnc = encrypt(input.anthropicKey);
+    }
+    if (input.openrouterKey !== undefined) {
+      data.openrouterKeyEnc = encrypt(input.openrouterKey);
     }
 
     await this.repo.upsertAiKey(data);

@@ -12,7 +12,7 @@ import { contentService } from "../content/content.service";
 import { postsService } from "../posts/posts.service";
 import { userService } from "../user/user.service";
 
-type BotModel = "openai" | "anthropic";
+type BotModel = "openai" | "anthropic" | "openrouter";
 
 type ConversationStep =
   | "idle"
@@ -72,6 +72,7 @@ const TONE_OPTIONS: Array<{ label: string; value: ToneType }> = [
 const MODEL_OPTIONS: Array<{ label: string; value: BotModel }> = [
   { label: "GPT-4o (OpenAI)", value: "openai" },
   { label: "Claude Sonnet (Anthropic)", value: "anthropic" },
+  { label: "OpenRouter", value: "openrouter" },
 ];
 
 function sessionKey(chatId: number): string {
