@@ -7,6 +7,7 @@ import { env } from "./config/env";
 import { disconnectPrisma } from "./config/prisma";
 import { redis } from "./config/redis";
 import { botService } from "./modules/bot";
+import { whatsappService } from "./modules/whatsapp";
 import { logger } from "./utils/logger";
 
 async function bootstrap(): Promise<void> {
@@ -21,6 +22,8 @@ async function bootstrap(): Promise<void> {
     logger.info("👷 Workers initialised");
     await botService.initialize();
     logger.info("🤖 Telegram bot initialised");
+    whatsappService.initialize();
+    logger.info("💬 WhatsApp bot initialised");
   }
 
   // ── Graceful shutdown ─────────────────────────────

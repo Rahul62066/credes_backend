@@ -19,6 +19,7 @@ import { contentRoutes } from "./modules/content";
 import { postsRoutes } from "./modules/posts";
 import { botRoutes } from "./modules/bot";
 import { dashboardRoutes } from "./modules/dashboard";
+import { whatsappRoutes } from "./modules/whatsapp";
 
 const app = express();
 
@@ -54,6 +55,9 @@ app.use("/api/content", contentRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/bot", botRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+// ── Webhook routes ──────────────────────────────────
+app.use("/webhooks/whatsapp", whatsappRoutes);
 
 // ── 404 handler ─────────────────────────────────────
 app.use((_req, res) => {
