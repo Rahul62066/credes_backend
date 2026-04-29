@@ -30,8 +30,10 @@ export const env = {
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
 
   // Social platform APIs
-  TWITTER_API_BASE_URL: process.env.TWITTER_API_BASE_URL || "https://api.twitter.com",
-  LINKEDIN_API_BASE_URL: process.env.LINKEDIN_API_BASE_URL || "https://api.linkedin.com",
+  TWITTER_API_BASE_URL:
+    process.env.TWITTER_API_BASE_URL || "https://api.twitter.com",
+  LINKEDIN_API_BASE_URL:
+    process.env.LINKEDIN_API_BASE_URL || "https://api.linkedin.com",
 
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
@@ -41,6 +43,18 @@ export const env = {
   TELEGRAM_WEBHOOK_URL: process.env.TELEGRAM_WEBHOOK_URL || "",
   TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET || "",
 
+  // Telegram webhook verification toggle (useful for local dev)
+  TELEGRAM_VERIFY_WEBHOOK:
+    (process.env.TELEGRAM_VERIFY_WEBHOOK || "false") === "true",
+
+  // Twilio WhatsApp
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID || "",
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN || "",
+  TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM || "",
+  TWILIO_WEBHOOK_URL: process.env.TWILIO_WEBHOOK_URL || "",
+  TWILIO_VERIFY_WEBHOOK:
+    (process.env.TWILIO_VERIFY_WEBHOOK || "true") === "true",
+
   // CORS
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:3000",
 
@@ -49,3 +63,21 @@ export const env = {
   isProd: process.env.NODE_ENV === "production",
   isTest: process.env.NODE_ENV === "test",
 } as const;
+
+// Rate limit defaults
+export const rateLimitConfig = {
+  content: {
+    windowSeconds: parseInt(
+      process.env.RATE_LIMIT_CONTENT_WINDOW_SECONDS || String(15 * 60),
+      10,
+    ),
+    max: parseInt(process.env.RATE_LIMIT_CONTENT_MAX || "10", 10),
+  },
+  publish: {
+    windowSeconds: parseInt(
+      process.env.RATE_LIMIT_PUBLISH_WINDOW_SECONDS || String(60 * 60),
+      10,
+    ),
+    max: parseInt(process.env.RATE_LIMIT_PUBLISH_MAX || "20", 10),
+  },
+};

@@ -15,8 +15,10 @@ cd credes_backend
 - Express + TypeScript API
 - Prisma (Postgres) for persistence
 - BullMQ + Redis for background publishing jobs
-- Telegram bot for conversational post creation
+- Telegram & WhatsApp bots for conversational post creation (via grammY and Twilio)
 - AI providers: OpenAI, Anthropic, OpenRouter (fallback support)
+- Redis-backed rate limiting (per-user request throttling)
+- JWT authentication with refresh token rotation
 ## Project Workflow
 
 ![alt text](BotArchitecture.png)
@@ -85,10 +87,22 @@ All environment variables (describe and example values). Copy these into `.env` 
 - `TELEGRAM_WEBHOOK_URL` — Public base URL for webhook (no path). Example: `https://your-app.onrender.com`
 - `TELEGRAM_WEBHOOK_SECRET` — Secret path segment for webhook route (random string)
 - `CORS_ORIGIN` — Allowed origin for browser clients (default `http://localhost:3000`)
+- `TELEGRAM_VERIFY_WEBHOOK` — Verify Telegram webhook header `X-Telegram-Bot-Api-Secret-Token` (default `false`, set to `true` in production)
+- `RATE_LIMIT_CONTENT_WINDOW_SECONDS` — Rate limit window for content generation (default `900` = 15 min)
+- `RATE_LIMIT_CONTENT_MAX` — Max content generation requests per window (default `10`)
+- `RATE_LIMIT_PUBLISH_WINDOW_SECONDS` — Rate limit window for publishing (default `3600` = 1 hour)
+- `RATE_LIMIT_PUBLISH_MAX` — Max publish requests per window (default `20`)
+- `TWILIO_ACCOUNT_SID` — Twilio account SID for WhatsApp (optional)
+- `TWILIO_AUTH_TOKEN` — Twilio auth token (keep secret)
+- `TWILIO_WHATSAPP_FROM` — WhatsApp sender number in format `whatsapp:+1234567890`
+- `TWILIO_WEBHOOK_URL` — Webhook base URL for Twilio callbacks (no path)
+- `TWILIO_VERIFY_WEBHOOK` — Verify Twilio webhook signatures (default `true`)
 
 Notes:
 - `REDIS_HOST` accepts either a host or a full `redis://` URL; the code parses both formats.
 - `ENCRYPTION_KEY` must be kept secret and consistent across deployments; rotate with care.
+- Rate limiting uses Redis and fails open (allows requests if Redis is unreachable).
+- Webhook verification can be disabled locally for testing (`TELEGRAM_VERIFY_WEBHOOK=false`, `TWILIO_VERIFY_WEBHOOK=false`).
 
 See `.env.example` for a template.
 
@@ -100,31 +114,43 @@ Authentication
 - `POST /api/auth/login` — login (body: `{ email, password }`) returns access + refresh tokens
 - `GET /api/auth/me` — returns current user (requires `Authorization: Bearer <token>`)
 
-Content / AI
+Content / AI (rate-limited: 10 req/15min per user)
 
 - `POST /api/content/generate` — generate AI content
 	- body: `{ idea, post_type, platforms, tone, model }`
 	- returns: per-platform preview, warnings (if any)
 
-Publishing
+Publishing (rate-limited: 20 req/hour per user)
 
 - `POST /api/posts/publish` — create a post and enqueue platform jobs
 	- body: `{ idea, platforms, platformContents, language, model }`
 	- returns: created post, platform posts and initial statuses
+- `POST /api/posts/schedule` — schedule a post for future publishing
+- `GET /api/posts?page=1&limit=10` — list user's posts (supports filtering by status, platform, date range)
 - `GET /api/posts/:id` — returns post and platform statuses
+- `POST /api/posts/:id/retry` — retry failed platforms
+- `DELETE /api/posts/:id` — cancel a post
 
-Bot webhook
+Dashboard
 
-- `POST /api/bot/telegram/webhook/:secret` — Telegram webhook (used by grammY webhookCallback)
+- `GET /api/dashboard/stats` — aggregate stats (total posts, success rate, posts per platform)
+
+Bot webhooks
+
+- `POST /api/bot/telegram/webhook/:secret` — Telegram webhook (grammY)
+- `POST /webhooks/whatsapp/twilio` — WhatsApp webhook (Twilio)
 
 For complete request/response examples, use the Postman collection (placeholder). I can add the collection file on request.
 
-## Telegram bot setup
+## Bot Setup
+
+### Telegram Bot
 
 1. Use BotFather to create a bot and copy the `TELEGRAM_BOT_TOKEN`.
 2. Choose a `TELEGRAM_WEBHOOK_SECRET` (random string) and set `TELEGRAM_WEBHOOK_URL` to your app base (no path) — e.g. `https://credes-backend-xxxxx.onrender.com`.
-3. Add `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_URL`, and `TELEGRAM_WEBHOOK_SECRET` to your deployment env.
-4. Deploy the app; during bootstrap the server will call `setWebhook` automatically and the route will be available at `/api/bot/telegram/webhook/:secret`.
+3. Set `TELEGRAM_VERIFY_WEBHOOK=false` for local dev; set to `true` in production to require header verification.
+4. Add environment variables and deploy; the server will register the webhook automatically on boot.
+5. Bot commands: `/start <user_id>`, `/post`, `/status`, `/accounts`, `/help`
 
 Verify webhook (optional):
 
@@ -132,26 +158,46 @@ Verify webhook (optional):
 curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 ```
 
-Bot quick test flow:
+### WhatsApp Bot (via Twilio)
 
-- `/start <user_id>` — link chat to a user id returned from the API
-- `/post` — start multi-step flow (type → platforms → tone → model → idea → preview → confirm)
+1. Create a Twilio account and enable WhatsApp integration.
+2. Copy `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and get your WhatsApp sender number (format: `whatsapp:+1234567890`).
+3. Set `TWILIO_WEBHOOK_URL` to your app base and configure webhook in Twilio console to `https://your-app.com/webhooks/whatsapp/twilio`.
+4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
+5. Same flow as Telegram: post type → platforms → tone → model → idea → preview → confirm.
+
+**Conversations are session-based**:
+- Telegram sessions: `telegram_session:{chatId}` (expires 30 min)
+- WhatsApp sessions: `whatsapp_session:{phoneNumber}` (expires 30 min)
+- Both use Redis and are automatically garbage-collected.
 
 Tips:
-- Use the same `userId` returned by the API when linking from Telegram.
-- If the bot doesn't respond, check Render logs for `Telegram webhook configured` and `Telegram bot initialised`.
+- Use the same `userId` returned by the API when linking from Telegram/WhatsApp.
+- Rate limiting is per-user; unauthenticated routes are limited by IP.
+- Check logs for `Telegram bot initialised` and `WhatsApp bot initialised` on boot.
 
 ## Postman collection
 
 Postman collection: <link-to-postman-collection> (I can export and add this for you if you want).
 
 ---
+## Rate Limiting
+
+Redis-backed per-user rate limiting is applied to:
+
+- `POST /api/content/generate` — 10 requests per 15 minutes
+- `POST /api/posts/publish` and `POST /api/posts/schedule` — 20 requests per hour
+
+Unauthenticated routes are limited by IP. If Redis is unreachable, rate limiting fails open (requests are allowed).
+
 ## Known issues and limitations
 
 - Redis eviction policy: managed Redis instances may use `allkeys-lru`; BullMQ requires stable storage — prefer `noeviction`.
 - AI outputs can be inconsistent; the service applies parsing fallbacks and returns warnings when constraints are violated.
 - The system expects OAuth tokens for social platforms; platform publisher adapters are currently simulated or require configuration.
-- If secrets (e.g., `TELEGRAM_BOT_TOKEN`) were exposed in repo history, rotate them immediately.
+- WhatsApp/Twilio and full OAuth flows (Twitter, LinkedIn) are under development.
+- If secrets (e.g., `TELEGRAM_BOT_TOKEN`, `TWILIO_AUTH_TOKEN`) were exposed in repo history, rotate them immediately.
+- Webhook signature verification should be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`).
 
 For more architectural notes, see `ARCHITECTURE.md` and `AI_USAGE.md`.
 

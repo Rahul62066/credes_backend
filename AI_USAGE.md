@@ -117,3 +117,80 @@ The following areas were intentionally owned and verified by hand:
 - AI output is logged and reviewed when users report failures.
 - The final repository should remain explainable by a human reviewer, not just by the prompt history.
 
+## Phase 2: Production Features (April 2026)
+
+Following the initial MVP, the following features were implemented to enhance production readiness:
+
+### Rate Limiting
+
+**Feature**: Redis-backed per-user request throttling for high-cost operations.
+
+**Implementation**:
+- Content generation: 10 requests per 15 minutes per user
+- Publishing (publish + schedule): 20 requests per hour per user
+- Unauthenticated routes: per-IP fallback
+- Middleware applies after auth to ensure consistent error envelopes
+- Fails open if Redis is unreachable (intentional availability trade-off)
+
+**Files**:
+- `src/middlewares/rateLimiter.ts` — Redis-backed limiter factory
+- Applied to: `POST /api/content/generate`, `POST /api/posts/publish`, `POST /api/posts/schedule`
+- Configuration via `.env` variables with sensible defaults
+
+### Telegram Webhook Header Verification
+
+**Feature**: Optional per-request header verification to strengthen webhook security.
+
+**Implementation**:
+- Path-based secret validation (existing)
+- Optional header check: `X-Telegram-Bot-Api-Secret-Token` (new)
+- Gated by environment flag `TELEGRAM_VERIFY_WEBHOOK` (default `false` for dev, `true` for prod)
+
+**Files**:
+- Updated: `src/modules/bot/bot.controller.ts`
+- Configuration: `TELEGRAM_VERIFY_WEBHOOK` in `.env`
+
+### WhatsApp/Twilio Bot Module
+
+**Feature**: WhatsApp conversational bot using Twilio webhooks, mirroring Telegram UX/flow.
+
+**Implementation**:
+- Same multi-step flow as Telegram: post type → platforms → tone → model → idea → preview → confirm/edit
+- Redis sessions: `whatsapp_session:{phoneNumber}` with 30-minute TTL
+- Numeric menu selections (more SMS-natural than button clicks)
+- Reuses existing `contentService` and `postsService` (no logic duplication)
+- Twilio webhook signature validation (configurable via `TWILIO_VERIFY_WEBHOOK`)
+
+**Files**:
+- `src/modules/whatsapp/whatsapp.validation.ts` — Zod schemas + types
+- `src/modules/whatsapp/whatsapp.service.ts` — Session + flow logic
+- `src/modules/whatsapp/whatsapp.controller.ts` — Webhook handler
+- `src/modules/whatsapp/whatsapp.routes.ts` — Route: `POST /webhooks/whatsapp/twilio`
+- Updated: `package.json` (added `twilio` dependency)
+- Updated: `src/server.ts`, `src/app.ts` (initialization + routing)
+
+**Configuration**:
+- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`
+- `TWILIO_WEBHOOK_URL`, `TWILIO_VERIFY_WEBHOOK`
+
+### Tests
+
+Added integration tests for new features:
+- `src/__tests__/rateLimiter.test.ts` — Tests Redis counter, key expiry, per-user tracking
+- `src/__tests__/botWebhookVerification.test.ts` — Tests path-secret + optional header verification
+
+### Documentation Updates
+
+- **README.md**: Added rate limiting section, WhatsApp bot setup, environment variable docs
+- **ARCHITECTURE.md**: Added sections on rate limiting, webhook verification, multi-bot architecture, new trade-offs
+- **AI_USAGE.md**: This section documenting Phase 2 implementation
+
+## Remaining Features (To Do)
+
+Features designed but not yet implemented:
+1. **Full OAuth for Twitter/X and LinkedIn** — Callback handlers, state parameter validation, token encryption
+2. **Cron Dispatcher** — Scheduled post publishing via node-cron
+3. **Post Analytics API** — Fetch engagement metrics from platforms
+4. **Language Detection** — Auto-detect idea language using franc or similar
+5. **Soft Delete + Restore** — Logical deletion for posts, restore endpoint
+

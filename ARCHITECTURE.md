@@ -2,18 +2,19 @@
 
 ## Overview
 
-Postly is a modular backend for generating social content with AI, coordinating multi-platform publishing through a Telegram-first workflow.
+Postly is a modular backend for generating social content with AI, coordinating multi-platform publishing through conversational bot workflows.
 
 Core runtime pieces:
 
-- Express API server for HTTP endpoints and Telegram webhook handling
+- Express API server for HTTP endpoints and bot webhook handling
 - Prisma ORM with PostgreSQL for persistent application data
-- Redis for Telegram conversation state and BullMQ queue storage
+- Redis for bot session state, BullMQ queue storage, and request rate limiting
 - BullMQ workers for asynchronous platform publishing
-- grammY Telegram bot for the conversational publishing flow
+- grammY Telegram bot for conversational publishing flow
+- Twilio WhatsApp integration (optional) for SMS-style messaging
 - AI provider adapters for OpenAI, Anthropic, and OpenRouter
 
-The design goal is to keep the API stateless where possible, push slow publishing work into queues, and preserve enough state to recover from retries or partial failures.
+The design goal is to keep the API stateless where possible, push slow publishing work into queues, preserve enough state to recover from retries, and throttle expensive operations (AI generation, publishing) via Redis-backed rate limiting.
 
 ## System Diagram
 
@@ -220,6 +221,80 @@ The schema uses a small set of targeted indexes to match the API access patterns
 - `platform_posts.status` for retry and monitoring workflows
 - unique `(post_id, platform)` to prevent duplicate platform rows
 
+## Rate Limiting
+
+Redis-backed request throttling is applied to high-cost operations:
+
+**Per-user rate limits** (requires auth):
+- Content generation: 10 requests per 15 minutes (`rl:content:user:{userId}`)
+- Publishing (publish + schedule): 20 requests per hour (`rl:publish:user:{userId}`)
+
+**Per-IP rate limits** (unauthenticated routes):
+- Default fallback when `req.user` is not available
+
+**Implementation**:
+- Uses Redis INCR + EXPIRE for atomic counter management
+- Middleware runs after validation and auth (so rate-limited errors are consistent)
+- Fails open: if Redis is unreachable, requests are allowed
+- Returns standard API error envelope (`{ data: null, meta: null, error: { code: 429, message } }`)
+
+**Configuration**:
+```env
+RATE_LIMIT_CONTENT_WINDOW_SECONDS=900      # 15 min
+RATE_LIMIT_CONTENT_MAX=10
+RATE_LIMIT_PUBLISH_WINDOW_SECONDS=3600     # 1 hour
+RATE_LIMIT_PUBLISH_MAX=20
+```
+
+## Webhook Verification
+
+### Telegram Webhook Security
+
+The Telegram webhook endpoint (`/api/bot/telegram/webhook/:secret`) validates requests via:
+1. **Path-based secret** — URL path must contain valid `TELEGRAM_WEBHOOK_SECRET`
+2. **Optional header verification** — When `TELEGRAM_VERIFY_WEBHOOK=true`, also checks header `X-Telegram-Bot-Api-Secret-Token`
+
+Invalid requests return `401 Unauthorized`. This two-layer approach allows:
+- Disabling header checks in local dev (`TELEGRAM_VERIFY_WEBHOOK=false`)
+- Enforcing strict validation in production (`TELEGRAM_VERIFY_WEBHOOK=true`)
+
+### Twilio Webhook Security
+
+The WhatsApp webhook endpoint (`/webhooks/whatsapp/twilio`) validates requests via:
+1. **Twilio signature verification** — Validates `X-Twilio-Signature` header using `TWILIO_AUTH_TOKEN`
+2. **Configuration flag** — When `TWILIO_VERIFY_WEBHOOK=false` (local dev), skips signature check
+
+Failure returns `401 Unauthorized`. Signature validation ensures requests originate from Twilio.
+
+## Multi-Bot Architecture
+
+Postly now supports multiple conversational bot platforms through a unified session + state model.
+
+### Telegram Bot (grammY)
+- **Webhook**: `POST /api/bot/telegram/webhook/:secret`
+- **Session key format**: `telegram_session:{chatId}`
+- **State**: step, userId, post type, platforms, tone, model, idea, preview, timestamps
+- **TTL**: 30 minutes of inactivity
+- **Interaction**: Callback query buttons (recommended for Telegram)
+- **Commands**: `/start <user_id>`, `/post`, `/status`, `/accounts`, `/help`
+
+### WhatsApp Bot (Twilio)
+- **Webhook**: `POST /webhooks/whatsapp/twilio`
+- **Session key format**: `whatsapp_session:{phoneNumber}` (WaId from Twilio)
+- **State**: same structure as Telegram (step, platforms, model, etc.)
+- **TTL**: 30 minutes of inactivity
+- **Interaction**: Numeric menu selections (more SMS-friendly than buttons)
+- **Commands**: `/start <user_id>` (same linking flow)
+
+### Shared Session Management
+Both bots use:
+- Redis for fast read/write
+- 30-minute TTL per inactive session
+- Automatic expiry (no cleanup needed)
+- Same content generation + publishing services (no logic duplication)
+
+**Key difference**: Telegram uses button-based menus (UX-optimized), WhatsApp uses numeric selections (SMS-optimized).
+
 ## Partial Failure Handling
 
 Partial failure is a normal path in this system, not an exception.
@@ -245,6 +320,38 @@ Common parent statuses:
 - `PROCESSING` while jobs are still running
 
 ## Trade-offs
+
+### Multiple bot platforms vs. single platform
+
+Pros:
+- Same conversational UX on Telegram and WhatsApp
+- Code reuse (shared session model, content service, posting service)
+- Flexibility for users to pick their preferred channel
+
+Cons:
+- More infrastructure (Twilio account + webhook)
+- Session management overhead (Redis keys per platform)
+- Two sets of environment variables to manage
+
+### Rate limiting before validation
+
+Pros:
+- Protects against malformed request floods
+- Consistent error response
+
+Cons:
+- Slightly higher latency (Redis call per request)
+- Fails open if Redis is down (intentional trade-off for availability)
+
+### Webhook signature verification as optional
+
+Pros:
+- Local development is easier without signature validation
+- Can test webhook handling without exact Twilio/Telegram setup
+
+Cons:
+- Must be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`)
+- Requires operator discipline to set flags correctly
 
 ### Telegram webhook instead of polling
 
@@ -299,7 +406,9 @@ Cons:
 
 ## Operational Notes
 
-- The API starts the Telegram bot and workers during normal server bootstrap.
-- The Telegram webhook route is `/api/bot/telegram/webhook/:secret`.
-- The bot should only be considered healthy if it can respond to `/help`, step through `/post`, and complete a preview flow.
-- For production, set `NODE_ENV=production`, `TELEGRAM_WEBHOOK_URL`, `TELEGRAM_WEBHOOK_SECRET`, and a valid `DATABASE_URL` and Redis config.
+- The API initializes both Telegram and WhatsApp bots during bootstrap (if env vars are set).
+- Missing credentials are logged as warnings; bots are gracefully disabled if unconfigured.
+- Both bots are stateless; all state is in Redis or the database.
+- Webhook verification should be enabled in production.
+- Rate limit keys are automatically garbage-collected by Redis expiry.
+- For production, set `NODE_ENV=production`, configure both bot webhooks, enable verification flags, and ensure a valid `DATABASE_URL` and Redis config.
