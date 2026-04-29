@@ -177,9 +177,11 @@ Tips:
 - Check logs for `Telegram bot initialised` and `WhatsApp bot initialised` on boot.
 
 ## Postman collection
+Postman collection: [<link-to-postman-collection>](https://lively-station-573091.postman.co/workspace/My-Workspace~6b26c949-1d22-446c-83fd-23b579ea4502/collection/31081743-df12a31e-9a4b-4ebe-aa06-13f70f7d9145?action=share&creator=31081743) (I can export and add this for you if you want).
 
-Postman collection: <link-to-postman-collection> (I can export and add this for you if you want).
-
+--- 
+### preview of postman collection
+For preview `[text](credes_backend.postman_collection.json)
 ---
 ## Rate Limiting
 
