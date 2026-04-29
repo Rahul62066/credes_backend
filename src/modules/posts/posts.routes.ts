@@ -11,11 +11,24 @@ import {
 	listPostsQuerySchema,
 	postIdParamSchema,
 } from "./posts.validation";
+import { publishRateLimiter } from "../../middlewares/rateLimiter";
 
 const router = Router();
 
-router.post("/publish", authGuard, validate(publishPostSchema), postsController.publish);
-router.post("/schedule", authGuard, validate(schedulePostSchema), postsController.schedule);
+router.post(
+	"/publish",
+	authGuard,
+	publishRateLimiter,
+	validate(publishPostSchema),
+	postsController.publish
+);
+router.post(
+	"/schedule",
+	authGuard,
+	publishRateLimiter,
+	validate(schedulePostSchema),
+	postsController.schedule
+);
 router.get("/", authGuard, validate(listPostsQuerySchema, "query"), postsController.list);
 router.get("/:id", authGuard, validate(postIdParamSchema, "params"), postsController.getById);
 router.post("/:id/retry", authGuard, validate(postIdParamSchema, "params"), postsController.retry);
