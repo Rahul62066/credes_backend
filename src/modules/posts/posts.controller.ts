@@ -50,7 +50,7 @@ export class PostsController {
 
       ApiResponse.success(res, {
         data: result.items,
-        meta: { pagination: result.pagination },
+        meta: result.pagination,
       });
     } catch (err) {
       next(err);
