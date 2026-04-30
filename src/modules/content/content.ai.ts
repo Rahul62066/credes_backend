@@ -15,7 +15,7 @@ export interface AiGenerateParams {
 }
 
 export interface AiClient {
-  generate(params: AiGenerateParams): Promise<string>;
+  generate(params: AiGenerateParams): Promise<{ text: string; tokensUsed: number }>;
 }
 
 export type AiProvider = "openai" | "anthropic" | "openrouter";
@@ -23,12 +23,12 @@ export type AiProvider = "openai" | "anthropic" | "openrouter";
 // ── OpenAI ───────────────────────────────────────────
 
 export class OpenAIClient implements AiClient {
-  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<string> {
+  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<{ text: string; tokensUsed: number }> {
     try {
       const client = new OpenAI({ apiKey });
 
       const response = await client.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         temperature: 0.7,
         max_tokens: 4096,
         response_format: { type: "json_object" },
@@ -43,8 +43,10 @@ export class OpenAIClient implements AiClient {
         throw new AppError("OpenAI returned empty response", 502);
       }
 
-      logger.debug("OpenAI raw response", { length: text.length });
-      return text;
+      const tokensUsed = response.usage?.total_tokens ?? 0;
+
+      logger.debug("OpenAI raw response", { length: text.length, tokensUsed });
+      return { text, tokensUsed };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
 
@@ -66,7 +68,7 @@ export class OpenAIClient implements AiClient {
 // ── OpenRouter ──────────────────────────────────────
 
 export class OpenRouterClient implements AiClient {
-  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<string> {
+  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<{ text: string; tokensUsed: number }> {
     try {
       const client = new OpenAI({
         apiKey,
@@ -74,7 +76,7 @@ export class OpenRouterClient implements AiClient {
       });
 
       const response = await client.chat.completions.create({
-        model: "openai/gpt-4o",
+        model: "openai/gpt-4o-mini",
         temperature: 0.7,
         max_tokens: 4096,
         response_format: { type: "json_object" },
@@ -89,8 +91,10 @@ export class OpenRouterClient implements AiClient {
         throw new AppError("OpenRouter returned empty response", 502);
       }
 
-      logger.debug("OpenRouter raw response", { length: text.length });
-      return text;
+      const tokensUsed = response.usage?.total_tokens ?? 0;
+
+      logger.debug("OpenRouter raw response", { length: text.length, tokensUsed });
+      return { text, tokensUsed };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
 
@@ -111,7 +115,7 @@ export class OpenRouterClient implements AiClient {
 // ── Anthropic ────────────────────────────────────────
 
 export class AnthropicClient implements AiClient {
-  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<string> {
+  async generate({ systemPrompt, userPrompt, apiKey }: AiGenerateParams): Promise<{ text: string; tokensUsed: number }> {
     try {
       const client = new Anthropic({ apiKey });
 
@@ -127,8 +131,10 @@ export class AnthropicClient implements AiClient {
         throw new AppError("Anthropic returned empty response", 502);
       }
 
-      logger.debug("Anthropic raw response", { length: block.text.length });
-      return block.text;
+      const tokensUsed = (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0);
+
+      logger.debug("Anthropic raw response", { length: block.text.length, tokensUsed });
+      return { text: block.text, tokensUsed };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
 

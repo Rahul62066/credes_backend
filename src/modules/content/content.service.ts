@@ -53,14 +53,14 @@ export class ContentService {
 
     // 3. Call AI
     const client = getAiClient(input.model);
-    const rawResponse = await client.generate({
+    const aiResponse = await client.generate({
       systemPrompt,
       userPrompt,
       apiKey,
     });
 
     // 4. Parse JSON
-    const parsed = this.parseAiResponse(rawResponse);
+    const parsed = this.parseAiResponse(aiResponse.text);
 
     // 5. Validate & annotate
     const result = this.validateAndAnnotate(parsed, input.platforms);
@@ -68,6 +68,7 @@ export class ContentService {
     return {
       platforms: result,
       model: input.model,
+      tokens_used: aiResponse.tokensUsed,
       postType: input.postType,
       tone: input.tone,
       language: input.language,
