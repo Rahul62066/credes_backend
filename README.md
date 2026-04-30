@@ -62,6 +62,58 @@ This repo includes `docker-compose.yml` for local development. It starts Postgre
 docker-compose up --build
 ```
 
+## Render deployment (production)
+
+This project can be deployed on Render as a Web Service and an optional Background Worker.
+
+Recommended Render setup:
+
+- Web Service (type: Web Service)
+	- Branch: your main branch
+	- Build command: `npm ci && npm run build && npx prisma generate`
+	- Start command: `npx prisma migrate deploy && npx prisma generate && npm run start`
+	- Environment: set the variables listed in `.env.example` (see below)
+
+- Background Worker (type: Worker) — optional but recommended for stability
+	- Build command: same as Web Service
+	- Start command: `npx prisma migrate deploy && npx prisma generate && npm run start:worker`
+
+Notes:
+- We run `npx prisma migrate deploy` at start to apply migrations in production safely (this does not generate new migrations).
+- For enum migrations, prefer creating additive migrations that add new enum values instead of renaming or removing values. Use `prisma migrate dev` locally and test against a staging DB before deploying to production.
+- Render provides `REDIS_URL` / `REDIS_TLS_URL` for managed Redis — this project supports `REDIS_URL` (or `rediss://` for TLS). Set `REDIS_URL` in Render env.
+
+### Render environment variables
+
+Set the variables from `.env.example` in the Render Dashboard under Environment.
+
+Key points:
+- `DATABASE_URL` — use the connection string provided by Render Postgres.
+- `REDIS_URL` — use the full Redis URL provided by Render (preferred). If you use separate host/port, set `REDIS_HOST`, `REDIS_PORT`, and optionally `REDIS_PASSWORD`.
+- `TELEGRAM_VERIFY_WEBHOOK` and `TWILIO_VERIFY_WEBHOOK` should be `true` in production.
+
+### Worker vs Web service
+
+We recommend running a dedicated Background Worker instance on Render (separate service) using `npm run start:worker`. Running workers inside the web service may cause resource contention and is harder to scale.
+
+## Health endpoint
+
+Render health checks should use `GET /health` which returns a JSON envelope indicating service status.
+
+## Deployment verification checklist
+
+After deployment, verify these endpoints:
+
+- `GET /health` — should return 200 and `status: ok`.
+- `POST /api/auth/register` — create a user.
+- `POST /api/auth/login` — obtain access token.
+- `POST /api/content/generate` — uses AI provider; test with valid API keys or mock in staging.
+- `POST /api/posts/publish` — create post and enqueue worker jobs.
+- `GET /api/dashboard/stats` — returns aggregates.
+- Telegram webhook — ensure `TELEGRAM_WEBHOOK_URL` and `TELEGRAM_WEBHOOK_SECRET` set and bot registers the webhook on boot.
+
+If any of these fail, check Render logs and ensure migrations ran and env vars are set correctly.
+
 ## Environment variables
 
 All environment variables (describe and example values). Copy these into `.env` or set them in your deployment platform.
