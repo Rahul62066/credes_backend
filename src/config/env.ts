@@ -34,6 +34,9 @@ export const env = {
     process.env.TWITTER_API_BASE_URL || "https://api.twitter.com",
   LINKEDIN_API_BASE_URL:
     process.env.LINKEDIN_API_BASE_URL || "https://api.linkedin.com",
+  META_API_BASE_URL:
+    process.env.META_API_BASE_URL || "https://graph.instagram.com",
+  META_API_VERSION: process.env.META_API_VERSION || "v19.0",
 
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",

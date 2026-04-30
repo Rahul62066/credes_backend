@@ -135,22 +135,124 @@ export class PlatformPublisherService {
     };
   }
 
-  async publishToInstagram(_ctx: PlatformPublishContext): Promise<PlatformPublishResult> {
-    // TODO(OAuth): implement Meta Graph API flow:
-    // 1) create media container
-    // 2) publish container
-    // Requires instagram business account id + page linkage + scoped user token.
-    throw new Error(
-      "Instagram publishing is not configured yet. TODO: implement Meta Graph OAuth + media publish flow."
-    );
+  async publishToInstagram(ctx: PlatformPublishContext): Promise<PlatformPublishResult> {
+    const token = this.getAccessToken(ctx);
+    const igUserId = (ctx.socialAccount.handle || "").trim();
+    
+    if (!igUserId) {
+      throw new Error(
+        "Instagram publish failed: social account handle must contain Instagram User ID"
+      );
+    }
+
+    const baseUrl = env.META_API_BASE_URL || "https://graph.instagram.com";
+    const apiVersion = env.META_API_VERSION || "v19.0";
+
+    // Step 1: Create media container
+    const containerUrl = `${baseUrl}/${apiVersion}/${igUserId}/media`;
+    const containerPayload = {
+      media_type: "CAROUSEL",
+      caption: ctx.content,
+      access_token: token,
+    };
+
+    const containerResponse = await fetch(containerUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(containerPayload),
+    });
+
+    const containerBody = await this.safeJson(containerResponse);
+    if (!containerResponse.ok) {
+      throw new Error(
+        `Instagram media container creation failed (${containerResponse.status}): ${this.extractProviderError(containerBody)}`
+      );
+    }
+
+    const mediaContainerId = containerBody?.id as string | undefined;
+    if (!mediaContainerId) {
+      throw new Error("Instagram publish failed: response missing media container id");
+    }
+
+    // Step 2: Publish the media container
+    const publishUrl = `${baseUrl}/${apiVersion}/${igUserId}/media_publish`;
+    const publishPayload = {
+      creation_id: mediaContainerId,
+      access_token: token,
+    };
+
+    const publishResponse = await fetch(publishUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(publishPayload),
+    });
+
+    const publishBody = await this.safeJson(publishResponse);
+    if (!publishResponse.ok) {
+      throw new Error(
+        `Instagram media publish failed (${publishResponse.status}): ${this.extractProviderError(publishBody)}`
+      );
+    }
+
+    const providerPostId = publishBody?.id as string | undefined;
+    if (!providerPostId) {
+      throw new Error("Instagram publish failed: response missing published media id");
+    }
+
+    return {
+      providerPostId,
+      providerRaw: publishBody,
+    };
   }
 
-  async publishToThreads(_ctx: PlatformPublishContext): Promise<PlatformPublishResult> {
-    // TODO(OAuth): implement Threads API flow once stable account/token
-    // requirements are finalized for this app.
-    throw new Error(
-      "Threads publishing is not configured yet. TODO: implement Threads OAuth + publish flow."
-    );
+  async publishToThreads(ctx: PlatformPublishContext): Promise<PlatformPublishResult> {
+    const token = this.getAccessToken(ctx);
+    const threadsUserId = (ctx.socialAccount.handle || "").trim();
+    
+    if (!threadsUserId) {
+      throw new Error(
+        "Threads publish failed: social account handle must contain Threads User ID"
+      );
+    }
+
+    const baseUrl = env.META_API_BASE_URL || "https://graph.instagram.com";
+    const apiVersion = env.META_API_VERSION || "v19.0";
+
+    // Publish thread using Meta's Threads API
+    const publishUrl = `${baseUrl}/${apiVersion}/${threadsUserId}/threads`;
+    const publishPayload = {
+      text: ctx.content,
+      access_token: token,
+    };
+
+    const publishResponse = await fetch(publishUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(publishPayload),
+    });
+
+    const publishBody = await this.safeJson(publishResponse);
+    if (!publishResponse.ok) {
+      throw new Error(
+        `Threads publish failed (${publishResponse.status}): ${this.extractProviderError(publishBody)}`
+      );
+    }
+
+    const providerPostId = publishBody?.id as string | undefined;
+    if (!providerPostId) {
+      throw new Error("Threads publish failed: response missing thread id");
+    }
+
+    return {
+      providerPostId,
+      providerRaw: publishBody,
+    };
   }
 
   private getAccessToken(ctx: PlatformPublishContext): string {
