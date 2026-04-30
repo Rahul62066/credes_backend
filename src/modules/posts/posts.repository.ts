@@ -27,7 +27,7 @@ export class PostsRepository {
         language: data.language,
         modelUsed: data.modelUsed,
         publishAt: data.publishAt,
-        postType: PostType.SHORT,
+        postType: PostType.ANNOUNCEMENT,
         status: data.status,
         platformPosts: {
           create: data.platformContents,
@@ -103,6 +103,19 @@ export class PostsRepository {
   async getPlatformPost(platformPostId: string) {
     return prisma.platformPost.findUnique({
       where: { id: platformPostId },
+      select: {
+        id: true,
+        postId: true,
+        platform: true,
+        content: true,
+        mediaUrl: true,
+        status: true,
+        publishedAt: true,
+        errorMessage: true,
+        attempts: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
