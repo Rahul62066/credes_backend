@@ -188,9 +188,12 @@ Added integration tests for new features:
 ## Remaining Features (To Do)
 
 Features designed but not yet implemented:
-1. **Full OAuth for Twitter/X and LinkedIn** — Callback handlers, state parameter validation, token encryption
-2. **Cron Dispatcher** — Scheduled post publishing via node-cron
-3. **Post Analytics API** — Fetch engagement metrics from platforms
-4. **Language Detection** — Auto-detect idea language using franc or similar
-5. **Soft Delete + Restore** — Logical deletion for posts, restore endpoint
+1. **Cron Dispatcher** — Scheduled post publishing via node-cron
+2. **Post Analytics API** — Fetch engagement metrics from platforms
+3. **Language Detection** — Auto-detect idea language using franc or similar
+4. **Soft Delete + Restore** — Logical deletion for posts, restore endpoint
+
+## Implemented After the Initial Draft
+
+- **OAuth for Twitter/X, LinkedIn, and Meta/Instagram** — backend-only connect/callback flow with state validation, encrypted token storage, and HTML success/error callbacks
 
