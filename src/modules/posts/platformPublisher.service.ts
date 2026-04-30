@@ -14,6 +14,7 @@ export interface PlatformPublishContext {
   postId: string;
   platformPostId: string;
   content: string;
+  mediaUrl?: string; // Required for Instagram, optional for other platforms
   socialAccount: {
     accessTokenEnc: string;
     refreshTokenEnc?: string | null;
@@ -145,16 +146,35 @@ export class PlatformPublisherService {
       );
     }
 
+    // Instagram requires image/video URL; plain text posts are not supported
+    if (!ctx.mediaUrl) {
+      throw new Error(
+        "Instagram publish failed: Instagram requires an image or video URL (mediaUrl). " +
+        "Plain text posts are not supported on Instagram."
+      );
+    }
+
     const baseUrl = env.META_API_BASE_URL || "https://graph.instagram.com";
     const apiVersion = env.META_API_VERSION || "v19.0";
 
-    // Step 1: Create media container
+    // Determine media type based on URL extension
+    const mediaType = this.detectMediaType(ctx.mediaUrl);
+
+    // Step 1: Create media container with image/video URL
     const containerUrl = `${baseUrl}/${apiVersion}/${igUserId}/media`;
-    const containerPayload = {
-      media_type: "CAROUSEL",
+    const containerPayload: Record<string, any> = {
       caption: ctx.content,
       access_token: token,
     };
+
+    // Add appropriate media URL based on type
+    if (mediaType === "VIDEO") {
+      containerPayload.media_type = "VIDEO";
+      containerPayload.video_url = ctx.mediaUrl;
+    } else {
+      containerPayload.media_type = "IMAGE";
+      containerPayload.image_url = ctx.mediaUrl;
+    }
 
     const containerResponse = await fetch(containerUrl, {
       method: "POST",
@@ -222,10 +242,49 @@ export class PlatformPublisherService {
     const baseUrl = env.META_API_BASE_URL || "https://graph.instagram.com";
     const apiVersion = env.META_API_VERSION || "v19.0";
 
-    // Publish thread using Meta's Threads API
-    const publishUrl = `${baseUrl}/${apiVersion}/${threadsUserId}/threads`;
-    const publishPayload = {
+    // Step 1: Create media container (required by Threads API)
+    const containerUrl = `${baseUrl}/${apiVersion}/${threadsUserId}/threads`;
+    const containerPayload: Record<string, any> = {
       text: ctx.content,
+      access_token: token,
+    };
+
+    // If media URL provided, add it as image or video
+    if (ctx.mediaUrl) {
+      const mediaType = this.detectMediaType(ctx.mediaUrl);
+      if (mediaType === "VIDEO") {
+        containerPayload.media_type = "VIDEO";
+        containerPayload.video_url = ctx.mediaUrl;
+      } else {
+        containerPayload.media_type = "IMAGE";
+        containerPayload.image_url = ctx.mediaUrl;
+      }
+    }
+
+    const containerResponse = await fetch(containerUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(containerPayload),
+    });
+
+    const containerBody = await this.safeJson(containerResponse);
+    if (!containerResponse.ok) {
+      throw new Error(
+        `Threads media container creation failed (${containerResponse.status}): ${this.extractProviderError(containerBody)}`
+      );
+    }
+
+    const mediaContainerId = containerBody?.id as string | undefined;
+    if (!mediaContainerId) {
+      throw new Error("Threads publish failed: response missing media container id");
+    }
+
+    // Step 2: Publish the media container
+    const publishUrl = `${baseUrl}/${apiVersion}/${threadsUserId}/threads_publish`;
+    const publishPayload = {
+      creation_id: mediaContainerId,
       access_token: token,
     };
 
@@ -288,6 +347,19 @@ export class PlatformPublisherService {
     if (body?.message) return body.message as string;
     if (Array.isArray(body?.errors) && body.errors[0]?.message) return body.errors[0].message as string;
     return JSON.stringify(body);
+  }
+
+  private detectMediaType(url: string): "IMAGE" | "VIDEO" {
+    const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".flv", ".wmv", ".m4v"];
+    const lowerUrl = url.toLowerCase();
+    
+    for (const ext of videoExtensions) {
+      if (lowerUrl.includes(ext)) {
+        return "VIDEO";
+      }
+    }
+    
+    return "IMAGE";
   }
 }
 

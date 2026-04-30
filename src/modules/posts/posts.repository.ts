@@ -18,7 +18,7 @@ export class PostsRepository {
     modelUsed?: string;
     publishAt?: Date;
     status: PostStatus;
-    platformContents: Array<{ platform: Platform; content: string; status: PlatformPostStatus }>;
+    platformContents: Array<{ platform: Platform; content: string; mediaUrl?: string; status: PlatformPostStatus }>;
   }) {
     return prisma.post.create({
       data: {

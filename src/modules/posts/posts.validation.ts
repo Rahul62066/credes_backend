@@ -17,6 +17,7 @@ export const postStatusFilterEnum = z.enum([
 
 const platformContentSchema = z.object({
   content: z.string().min(1, "Content is required"),
+  mediaUrl: z.string().url("mediaUrl must be a valid URL").optional(), // For Instagram, Threads
 });
 
 export const publishPostSchema = z.object({

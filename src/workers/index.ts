@@ -68,6 +68,7 @@ export const postWorker = new Worker(
       postId,
       platformPostId,
       content: platformPost.content,
+      mediaUrl: platformPost.mediaUrl || undefined,
       socialAccount: {
         accessTokenEnc: socialAccount.accessTokenEnc,
         refreshTokenEnc: socialAccount.refreshTokenEnc,

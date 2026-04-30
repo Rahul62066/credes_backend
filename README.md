@@ -124,8 +124,10 @@ Publishing (rate-limited: 20 req/hour per user)
 
 - `POST /api/posts/publish` — create a post and enqueue platform jobs
 	- body: `{ idea, platforms, platformContents, language, model }`
-	- returns: created post, platform posts and initial statuses
-- `POST /api/posts/schedule` — schedule a post for future publishing
+	- `platformContents`: object mapping platform names to `{ content, mediaUrl? }`
+	- **Instagram & Threads require `mediaUrl`** (image or video URL); plain text posts not supported
+	- returns: created post, platform statuses
+- `POST /api/posts/schedule` — schedule a post for future publishing (same body as publish)
 - `GET /api/posts?page=1&limit=10` — list user's posts (supports filtering by status, platform, date range)
 - `GET /api/posts/:id` — returns post and platform statuses
 - `POST /api/posts/:id/retry` — retry failed platforms
@@ -196,7 +198,10 @@ Unauthenticated routes are limited by IP. If Redis is unreachable, rate limiting
 
 - Redis eviction policy: managed Redis instances may use `allkeys-lru`; BullMQ requires stable storage — prefer `noeviction`.
 - AI outputs can be inconsistent; the service applies parsing fallbacks and returns warnings when constraints are violated.
-- The system expects OAuth tokens for social platforms; platform publisher adapters are currently simulated or require configuration.
+- **Platform publishing requirements:**
+  - **Twitter/X & LinkedIn:** Text-only posts supported (OAuth tokens required)
+  - **Instagram:** Requires image/video URL (`mediaUrl`); plain text posts not supported by Meta API
+  - **Threads:** Supports text with optional image/video URL (`mediaUrl`); container creation required by Meta API
 - WhatsApp/Twilio and full OAuth flows (Twitter, LinkedIn) are under development.
 - If secrets (e.g., `TELEGRAM_BOT_TOKEN`, `TWILIO_AUTH_TOKEN`) were exposed in repo history, rotate them immediately.
 - Webhook signature verification should be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`).

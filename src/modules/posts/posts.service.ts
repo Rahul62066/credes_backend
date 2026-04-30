@@ -110,6 +110,7 @@ export class PostsService {
       platformContents: input.platforms.map((platform) => ({
         platform: PLATFORM_MAP[platform],
         content: input.platformContents[platform]?.content || "",
+        mediaUrl: input.platformContents[platform]?.mediaUrl,
         status: PlatformPostStatus.PENDING,
       })),
     });
@@ -135,6 +136,7 @@ export class PostsService {
       platformContents: input.platforms.map((platform) => ({
         platform: PLATFORM_MAP[platform],
         content: input.platformContents[platform]?.content || "",
+        mediaUrl: input.platformContents[platform]?.mediaUrl,
         status: PlatformPostStatus.PENDING,
       })),
     });
