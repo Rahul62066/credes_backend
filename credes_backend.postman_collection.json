@@ -2,550 +2,1006 @@
   "info": {
     "_postman_id": "df12a31e-9a4b-4ebe-aa06-13f70f7d9145",
     "name": "credes_backend",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "31081743"
+    "description": "Postly backend API collection. Uses collection/environment variables: baseUrl, accessToken, refreshToken.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "forcheckhealth",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [
+      "name": "Health",
+      "item": [
         {
-    "data": {
-        "status": "ok",
-        "uptime": 6.991908309,
-        "timestamp": "2026-04-29T10:28:39.318Z",
-        "environment": "production"
-    },
-    "meta": {
-        "message": "Postly API is healthy 🚀"
-    },
-    "error": null
-}
+          "name": "GET Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/health"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"status\": \"ok\",\n    \"uptime\": 42.21,\n    \"timestamp\": \"2026-04-30T08:00:00.000Z\",\n    \"environment\": \"production\"\n  },\n  \"meta\": {\n    \"message\": \"Postly API is healthy 🚀\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        }
       ]
     },
     {
-      "name": "register",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "user": {
-            "id": "cmojwxxtt000023gm919xjida",
-            "email": "rahul@gmail.com",
-            "name": "rahul",
-            "bio": null,
-            "defaultTone": "PROFESSIONAL",
-            "defaultLanguage": "en",
-            "createdAt": "2026-04-29T10:29:34.721Z",
-            "updatedAt": "2026-04-29T10:29:34.721Z"
-        },
-        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW9qd3h4dHQwMDAwMjNnbTkxOXhqaWRhIiwiZW1haWwiOiJyYWh1bEBnbWFpbC5jb20iLCJpYXQiOjE3Nzc0NTg1NzQsImV4cCI6MTc3NzQ1OTQ3NH0.qVqhbPNZo94wv8o8WhpwV2YkjHPDGhM1KAwlJzv3fg0",
-        "refreshToken": "160d52a025ed426305e2a2a3efef821cfdacbd51dc8a8291963a447cd84cdd8a44eb62009597cb3a"
-    },
-    "meta": {
-        "message": "User registered successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "refreshToken",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "user": {
-            "id": "cmojwxxtt000023gm919xjida",
-            "email": "rahul@gmail.com",
-            "name": "rahul",
-            "bio": null,
-            "defaultTone": "PROFESSIONAL",
-            "defaultLanguage": "en",
-            "createdAt": "2026-04-29T10:29:34.721Z",
-            "updatedAt": "2026-04-29T10:29:34.721Z"
-        },
-        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW9qd3h4dHQwMDAwMjNnbTkxOXhqaWRhIiwiZW1haWwiOiJyYWh1bEBnbWFpbC5jb20iLCJpYXQiOjE3Nzc0NTg2MjAsImV4cCI6MTc3NzQ1OTUyMH0.U_vrehZ_RwxiH36Fg-iVmOSqfbkM79g53itiwGZ1zJU",
-        "refreshToken": "c3201d2a0630546983f1f53d3aadebadd4019a8f63b3edc84ddbeef8824bf8cc5db786beb7fb8116"
-    },
-    "meta": {
-        "message": "Token refreshed successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "logout",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": null,
-    "meta": {
-        "message": "Logged out successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "login",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "user": {
-            "id": "cmojwxxtt000023gm919xjida",
-            "email": "rahul@gmail.com",
-            "name": "Rahul Kumar",
-            "bio": "Backend Developer",
-            "defaultTone": "PROFESSIONAL",
-            "defaultLanguage": "en",
-            "createdAt": "2026-04-29T10:29:34.721Z",
-            "updatedAt": "2026-04-29T10:32:19.886Z"
-        },
-        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW9qd3h4dHQwMDAwMjNnbTkxOXhqaWRhIiwiZW1haWwiOiJyYWh1bEBnbWFpbC5jb20iLCJpYXQiOjE3Nzc0NTkwMTgsImV4cCI6MTc3NzQ1OTkxOH0.7pxMlzZug4PtB-Ich52VzAcdgRwN4fvQ1I61JJdVlzI",
-        "refreshToken": "abdac9898eb5925f5ceae3848d3ad17f4d3991e465bcdba57df4d8e325352ac4050e7653282a4b44"
-    },
-    "meta": {
-        "message": "Login successful"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "profile",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "user": {
-            "id": "cmojwxxtt000023gm919xjida",
-            "email": "rahul@gmail.com",
-            "name": "rahul",
-            "bio": null,
-            "defaultTone": "PROFESSIONAL",
-            "defaultLanguage": "en",
-            "createdAt": "2026-04-29T10:29:34.721Z",
-            "updatedAt": "2026-04-29T10:29:34.721Z"
-        }
-    },
-    "meta": null,
-    "error": null
-}]
-    },
-    {
-      "name": "update profile",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "user": {
-            "id": "cmojwxxtt000023gm919xjida",
-            "email": "rahul@gmail.com",
-            "name": "Rahul Kumar",
-            "bio": "Backend Developer",
-            "defaultTone": "PROFESSIONAL",
-            "defaultLanguage": "en",
-            "createdAt": "2026-04-29T10:29:34.721Z",
-            "updatedAt": "2026-04-29T10:32:19.886Z"
-        }
-    },
-    "meta": {
-        "message": "Profile updated successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "socialcreate",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "account": {
-            "id": "cmojx8p43000623gmnj7swb1a",
-            "platform": "TWITTER",
-            "handle": "rahul_kr",
-            "connectedAt": "2026-04-29T10:37:56.643Z"
-        }
-    },
-    "meta": {
-        "message": "Social account connected successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "socialget",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "accounts": [
-            {
-                "id": "cmojx8p43000623gmnj7swb1a",
-                "platform": "TWITTER",
-                "handle": "rahul_kr",
-                "connectedAt": "2026-04-29T10:37:56.643Z"
-            }
-        ]
-    },
-    "meta": null,
-    "error": null
-}]
-    },
-    {
-      "name": "socialdelete",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": null,
-    "meta": {
-        "message": "Social account disconnected successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "ai-keys",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "keys": {
-            "openaiKey": null,
-            "anthropicKey": null,
-            "openrouterKey": "sk-o...7002",
-            "updatedAt": "2026-04-29T10:38:45.682Z"
-        }
-    },
-    "meta": {
-        "message": "AI keys updated successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "contentgenerate",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "platforms": {
-            "twitter": {
-                "content": "Exciting news! 🚀 We're launching our AI startup today, dedicated to transforming how businesses leverage technology for growth. #AI #Startup",
-                "hashtags": [
-                    "AI",
-                    "Startup"
-                ],
-                "characterCount": 141,
-                "warnings": [
-                    "Character count corrected: AI reported 171, actual is 141"
-                ]
-            },
-            "linkedin": {
-                "content": "Today marks a pivotal moment as we unveil our new AI startup. Our mission is to empower businesses through innovative technology solutions that drive efficiency and growth. \n\nWith cutting-edge AI tools, we aim to redefine the landscape of digital transformation. Join us on this journey to unlock new opportunities and drive success. \n\nStay tuned for updates and insights as we embark on this exciting venture. \n\n#AI #Innovation #BusinessGrowth #TechStartup #DigitalTransformation",
-                "hashtags": [
-                    "AI",
-                    "Innovation",
-                    "BusinessGrowth",
-                    "TechStartup",
-                    "DigitalTransformation"
-                ],
-                "characterCount": 480,
-                "warnings": [
-                    "Character count corrected: AI reported 892, actual is 480",
-                    "Content below linkedin minimum: 480/800 chars"
-                ]
-            },
-            "instagram": {
-                "content": "🚀 Big news! We are thrilled to announce the launch of our AI startup! \n\nOur journey begins with a commitment to revolutionize the way businesses harness technology. \n\nFrom enhancing productivity to unlocking new insights, we are here to make a difference! 💡 \n\nJoin us as we embark on this exciting adventure. Don’t forget to follow our page for updates! \n\nSave this post and share it with someone who loves tech! \n\n#AI #Innovation #TechNews #StartupLife #Entrepreneur #DigitalTransformation #Business #Growth #FutureOfWork #Technology #AIStartup #Entrepreneurship #SmartSolutions #TechForGood #Disruption #TeamWork",
-                "hashtags": [
-                    "AI",
-                    "Innovation",
-                    "TechNews",
-                    "StartupLife",
-                    "Entrepreneur",
-                    "DigitalTransformation",
-                    "Business",
-                    "Growth",
-                    "FutureOfWork",
-                    "Technology",
-                    "AIStartup",
-                    "Entrepreneurship",
-                    "SmartSolutions",
-                    "TechForGood",
-                    "Disruption",
-                    "TeamWork"
-                ],
-                "characterCount": 616,
-                "warnings": [
-                    "Character count corrected: AI reported 1134, actual is 616",
-                    "Too many hashtags for instagram: 16 (max 15)"
-                ]
-            },
-            "threads": {
-                "content": "Hey everyone! 🎉 We’re launching our AI startup today and I couldn't be more excited! Our goal? To help businesses thrive with innovative tech solutions. Can't wait to share more with you all! #AI #Startup #Innovation",
-                "hashtags": [
-                    "AI",
-                    "Startup",
-                    "Innovation"
-                ],
-                "characterCount": 217,
-                "warnings": [
-                    "Character count corrected: AI reported 248, actual is 217"
-                ]
-            }
-        },
-        "model": "openrouter",
-        "postType": "announcement",
-        "tone": "professional",
-        "language": "en"
-    },
-    "meta": {
-        "message": "Content generated successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "publishpost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "id": "cmojxawin000823gm7f6xmvlg",
-        "idea": "Launching new AI startup",
-        "status": "processing",
-        "publishAt": null,
-        "createdAt": "2026-04-29T10:39:39.551Z",
-        "updatedAt": "2026-04-29T10:39:39.551Z",
-        "language": "en",
-        "model": "openrouter",
-        "platformPosts": [
-            {
-                "id": "cmojxawix000923gmsf57jrl9",
-                "platform": "twitter",
-                "status": "queued",
-                "content": "Exciting news! We're launching our AI startup today! 🚀 Join us in transforming the future of technology. #AI #Startup",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxawix000a23gmqamriapw",
-                "platform": "linkedin",
-                "status": "queued",
-                "content": "We are thrilled to announce the launch of our new AI startup today! Our mission is to revolutionize how businesses harness the power of artificial intelligence. \n\nWith innovative solutions at our core, we aim to enhance productivity and unlock new opportunities for growth. We invite you to explore our platform and see how we can work together to drive success. \n\nVisit our website for more details and join us on this exciting journey! \n\n#AI #Innovation #BusinessGrowth #TechStartup",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxawka000b23gmh6azywlz",
-                "platform": "instagram",
-                "status": "queued",
-                "content": "🚀 Big news! We're excited to announce the launch of our AI startup! 🌟 Our vision is to empower businesses with cutting-edge AI solutions that drive efficiency and innovation. \n\nJoin us as we embark on this incredible journey! 💡 Tag someone who’s ready to embrace the future of technology! \n\n#AI #Startup #Innovation #Tech #Business #Entrepreneur #Future #DigitalTransformation #Success #Growth #MachineLearning #DataScience #Entrepreneurship #Leadership #TechForGood #AIRevolution",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxawka000c23gm8ml1eeap",
-                "platform": "threads",
-                "status": "queued",
-                "content": "Guess what? We're launching our AI startup today! 🎉 It's all about making tech smarter and easier for everyone. Can't wait to share more with you all! #AI #Startup #Innovation",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            }
-        ]
-    },
-    "meta": {
-        "message": "Post publishing started"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "schedulepost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-    "data": {
-        "id": "cmojxeija000d23gmhpb7pazy",
-        "idea": "Launching new AI startup",
-        "status": "scheduled",
-        "publishAt": "2026-05-01T10:00:00.000Z",
-        "createdAt": "2026-04-29T10:42:28.054Z",
-        "updatedAt": "2026-04-29T10:42:28.054Z",
-        "language": "en",
-        "model": "openrouter",
-        "platformPosts": [
-            {
-                "id": "cmojxeijj000e23gmaulqo4o1",
-                "platform": "twitter",
-                "status": "queued",
-                "content": "Exciting news! We're launching our AI startup today! 🚀 Join us in transforming the future of technology. #AI #Startup",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxeijj000f23gmnm85eg68",
-                "platform": "linkedin",
-                "status": "queued",
-                "content": "We are thrilled to announce the launch of our new AI startup today! Our mission is to revolutionize how businesses harness the power of artificial intelligence. \n\nWith innovative solutions at our core, we aim to enhance productivity and unlock new opportunities for growth. We invite you to explore our platform and see how we can work together to drive success. \n\nVisit our website for more details and join us on this exciting journey! \n\n#AI #Innovation #BusinessGrowth #TechStartup",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxeijj000g23gm6yub1nfx",
-                "platform": "instagram",
-                "status": "queued",
-                "content": "🚀 Big news! We're excited to announce the launch of our AI startup! 🌟 Our vision is to empower businesses with cutting-edge AI solutions that drive efficiency and innovation. \n\nJoin us as we embark on this incredible journey! 💡 Tag someone who’s ready to embrace the future of technology! \n\n#AI #Startup #Innovation #Tech #Business #Entrepreneur #Future #DigitalTransformation #Success #Growth #MachineLearning #DataScience #Entrepreneurship #Leadership #TechForGood #AIRevolution",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            },
-            {
-                "id": "cmojxeijj000h23gmebkvbwe6",
-                "platform": "threads",
-                "status": "queued",
-                "content": "Guess what? We're launching our AI startup today! 🎉 It's all about making tech smarter and easier for everyone. Can't wait to share more with you all! #AI #Startup #Innovation",
-                "errorMessage": null,
-                "attempts": 0,
-                "publishedAt": null
-            }
-        ]
-    },
-    "meta": {
-        "message": "Post scheduled successfully"
-    },
-    "error": null
-}]
-    },
-    {
-      "name": "getpost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [
+      "name": "Auth APIs",
+      "item": [
         {
-      "data": {
-        "posts": [
+          "name": "POST Register",
+          "event": [
             {
-                "id": "cmojxeija000d23gmhpb7pazy",
-                "idea": "Launching new AI startup",
-                "status": "scheduled",
-                "publishAt": "2026-05-01T10:00:00.000Z",
-                "createdAt": "2026-04-29T10:42:28.054Z",
-                "updatedAt": "2026-04-29T10:42:28.054Z",
-                "language": "en",
-                "model": "openrouter",
-                "platformPosts": [
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Register returns tokens', function () {",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json.data).to.have.property('accessToken');",
+                  "  pm.expect(json.data).to.have.property('refreshToken');",
+                  "});",
+                  "if (json?.data?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "  pm.environment.set('accessToken', json.data.accessToken);",
+                  "}",
+                  "if (json?.data?.refreshToken) {",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  pm.environment.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"StrongPass123\",\n  \"name\": \"Postly User\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"StrongPass123\",\n  \"name\": \"Postly User\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/register"
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\",\n      \"name\": \"Postly User\",\n      \"bio\": null,\n      \"defaultTone\": \"PROFESSIONAL\",\n      \"defaultLanguage\": \"en\",\n      \"createdAt\": \"2026-04-30T08:00:00.000Z\",\n      \"updatedAt\": \"2026-04-30T08:00:00.000Z\"\n    },\n    \"accessToken\": \"<access-token>\",\n    \"refreshToken\": \"<refresh-token>\"\n  },\n  \"meta\": {\n    \"message\": \"User registered successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Login returns tokens', function () {",
+                  "  pm.expect(json).to.have.property('data');",
+                  "  pm.expect(json.data).to.have.property('accessToken');",
+                  "  pm.expect(json.data).to.have.property('refreshToken');",
+                  "});",
+                  "if (json?.data?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "  pm.environment.set('accessToken', json.data.accessToken);",
+                  "}",
+                  "if (json?.data?.refreshToken) {",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  pm.environment.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"StrongPass123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"StrongPass123\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/login"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\",\n      \"name\": \"Postly User\"\n    },\n    \"accessToken\": \"<access-token>\",\n    \"refreshToken\": \"<refresh-token>\"\n  },\n  \"meta\": {\n    \"message\": \"Login successful\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "if (json?.data?.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "  pm.environment.set('accessToken', json.data.accessToken);",
+                  "}",
+                  "if (json?.data?.refreshToken) {",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  pm.environment.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/refresh"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/refresh"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\"\n    },\n    \"accessToken\": \"<new-access-token>\",\n    \"refreshToken\": \"<new-refresh-token>\"\n  },\n  \"meta\": {\n    \"message\": \"Token refreshed successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/logout"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
+                },
+                "url": "{{baseUrl}}/api/auth/logout"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": null,\n  \"meta\": {\n    \"message\": \"Logged out successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/me"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
                     {
-                        "id": "cmojxeijj000e23gmaulqo4o1",
-                        "platform": "twitter",
-                        "status": "queued",
-                        "content": "Exciting news! We're launching our AI startup today! 🚀 Join us in transforming the future of technology. #AI #Startup",
-                        "errorMessage": null,
-                        "attempts": 0,
-                        "publishedAt": null
+                      "key": "token",
+                      "value": "<access-token>",
+                      "type": "string"
                     }
-                ]
+                  ]
+                },
+                "url": "{{baseUrl}}/api/auth/me"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\",\n      \"name\": \"Postly User\"\n    }\n  },\n  \"meta\": null,\n  \"error\": null\n}"
             }
-        ]
-    }}
+          ]
+        }
       ]
     },
     {
-      "name": "deletepost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [
+      "name": "User APIs",
+      "item": [
         {
-    "data": null,
-    "meta": {
-        "message": "Post deleted successfully"
-    },
-    "error": null
-}
+          "name": "GET Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/user/profile"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/user/profile"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\",\n      \"name\": \"Postly User\",\n      \"bio\": \"Backend Engineer\"\n    }\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "PUT Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"PROFESSIONAL\",\n  \"defaultLanguage\": \"en\"\n}"
+            },
+            "url": "{{baseUrl}}/api/user/profile"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"PROFESSIONAL\",\n  \"defaultLanguage\": \"en\"\n}"
+                },
+                "url": "{{baseUrl}}/api/user/profile"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"cmxxxxx\",\n      \"email\": \"user@example.com\",\n      \"name\": \"Postly User Updated\"\n    }\n  },\n  \"meta\": {\n    \"message\": \"Profile updated successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Connect Social Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"TWITTER\",\n  \"accessToken\": \"platform-access-token\",\n  \"refreshToken\": \"optional-refresh-token\",\n  \"handle\": \"postly_user\"\n}"
+            },
+            "url": "{{baseUrl}}/api/user/social-accounts"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/user/social-accounts"
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": {\n    \"account\": {\n      \"id\": \"cmsocialid\",\n      \"platform\": \"TWITTER\",\n      \"handle\": \"postly_user\",\n      \"connectedAt\": \"2026-04-30T08:20:00.000Z\"\n    }\n  },\n  \"meta\": {\n    \"message\": \"Social account connected successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Social Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/user/social-accounts"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/user/social-accounts"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"accounts\": [\n      {\n        \"id\": \"cmsocialid\",\n        \"platform\": \"TWITTER\",\n        \"handle\": \"postly_user\",\n        \"connectedAt\": \"2026-04-30T08:20:00.000Z\"\n      }\n    ]\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE Social Account by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/user/social-accounts/{{socialAccountId}}"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/api/user/social-accounts/cmsocialid"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": null,\n  \"meta\": {\n    \"message\": \"Social account disconnected\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "PUT AI Keys",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"openaiKey\": \"sk-example-openai-key\",\n  \"openrouterKey\": \"sk-example-openrouter-key\"\n}"
+            },
+            "url": "{{baseUrl}}/api/user/ai-keys"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{baseUrl}}/api/user/ai-keys"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"keys\": {\n      \"openaiKey\": \"sk-o...abcd\",\n      \"anthropicKey\": null,\n      \"openrouterKey\": \"sk-o...1234\",\n      \"updatedAt\": \"2026-04-30T08:25:00.000Z\"\n    }\n  },\n  \"meta\": {\n    \"message\": \"AI keys updated successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        }
       ]
     },
     {
-      "name": "botTelegrampost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [
-        
+      "name": "Content APIs",
+      "item": [
+        {
+          "name": "POST Generate Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idea\": \"Launch announcement for our AI writing assistant\",\n  \"post_type\": \"announcement\",\n  \"platforms\": [\"twitter\", \"linkedin\"],\n  \"tone\": \"professional\",\n  \"language\": \"en\",\n  \"model\": \"openai\"\n}"
+            },
+            "url": "{{baseUrl}}/api/content/generate"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/content/generate"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"generated\": {\n      \"twitter\": {\n        \"content\": \"We are excited to launch our AI writing assistant today.\",\n        \"char_count\": 74,\n        \"hashtags\": [\"#AI\", \"#SaaS\"]\n      },\n      \"linkedin\": {\n        \"content\": \"Today we are announcing our AI writing assistant designed for teams.\",\n        \"char_count\": 96,\n        \"hashtags\": [\"#AI\", \"#ProductLaunch\", \"#ContentMarketing\"]\n      }\n    },\n    \"model_used\": \"openai/gpt-4o-mini\",\n    \"tokens_used\": 812\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
       ]
     },
     {
-      "name": "getdashboard",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": [{
-  "data": {
-    "totalPosts": 12,
-    "successRate": 75,
-    "postsPerPlatform": {
-      "twitter": 5,
-      "linkedin": 4,
-      "instagram": 2,
-      "threads": 1,
-      "facebook": 0
-    },
-    "failedPostsCount": 1,
-    "scheduledPostsCount": 3
-  },
-  "meta": null,
-  "error": null
-}]
+      "name": "Post APIs",
+      "item": [
+        {
+          "name": "POST Publish",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idea\": \"Announce new feature release\",\n  \"post_type\": \"announcement\",\n  \"tone\": \"professional\",\n  \"platforms\": [\"twitter\", \"instagram\"],\n  \"platformContents\": {\n    \"twitter\": {\n      \"content\": \"New feature is live today. Try it now! #ProductUpdate\"\n    },\n    \"instagram\": {\n      \"content\": \"Our newest feature is live today.\",\n      \"mediaUrl\": \"https://images.example.com/launch.jpg\"\n    }\n  },\n  \"language\": \"en\",\n  \"model\": \"openai\"\n}"
+            },
+            "url": "{{baseUrl}}/api/posts/publish"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/posts/publish"
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": {\n    \"id\": \"cmpostid\",\n    \"idea\": \"Announce new feature release\",\n    \"post_type\": \"announcement\",\n    \"tone\": \"professional\",\n    \"status\": \"processing\",\n    \"platformPosts\": [\n      {\n        \"id\": \"cmpf1\",\n        \"platform\": \"twitter\",\n        \"status\": \"queued\"\n      },\n      {\n        \"id\": \"cmpf2\",\n        \"platform\": \"instagram\",\n        \"status\": \"queued\"\n      }\n    ]\n  },\n  \"meta\": {\n    \"message\": \"Post publishing started\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idea\": \"Schedule next week campaign post\",\n  \"post_type\": \"educational\",\n  \"tone\": \"friendly\",\n  \"platforms\": [\"linkedin\", \"threads\"],\n  \"platformContents\": {\n    \"linkedin\": {\n      \"content\": \"Next week we roll out our customer success webinar.\"\n    },\n    \"threads\": {\n      \"content\": \"Webinar next week. Save your seat!\",\n      \"mediaUrl\": \"https://images.example.com/webinar.png\"\n    }\n  },\n  \"language\": \"en\",\n  \"model\": \"anthropic\",\n  \"publishAt\": \"2026-05-01T12:30:00.000Z\"\n}"
+            },
+            "url": "{{baseUrl}}/api/posts/schedule"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/posts/schedule"
+              },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": {\n    \"id\": \"cmScheduledPost\",\n    \"idea\": \"Schedule next week campaign post\",\n    \"post_type\": \"educational\",\n    \"tone\": \"friendly\",\n    \"status\": \"scheduled\",\n    \"publishAt\": \"2026-05-01T12:30:00.000Z\"\n  },\n  \"meta\": {\n    \"message\": \"Post scheduled successfully\"\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Posts List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/posts?page=1&limit=10"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/posts?page=1&limit=10"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"cmpostid\",\n      \"idea\": \"Announce new feature release\",\n      \"post_type\": \"announcement\",\n      \"tone\": \"professional\",\n      \"status\": \"published\",\n      \"platformPosts\": [\n        {\n          \"platform\": \"twitter\",\n          \"status\": \"published\"\n        }\n      ]\n    }\n  ],\n  \"meta\": {\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 10,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Post by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/posts/{{postId}}"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/posts/cmpostid"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"id\": \"cmpostid\",\n    \"idea\": \"Announce new feature release\",\n    \"post_type\": \"announcement\",\n    \"tone\": \"professional\",\n    \"status\": \"published\",\n    \"platformPosts\": [\n      {\n        \"platform\": \"twitter\",\n        \"status\": \"published\",\n        \"publishedAt\": \"2026-04-30T08:35:00.000Z\"\n      }\n    ]\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "whatsapptwiliopost",
-      "request": {
-        "method": "GET",
-        "header": []
-      },
-      "response": []
+      "name": "Dashboard APIs",
+      "item": [
+        {
+          "name": "GET Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/dashboard/stats"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/dashboard/stats"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"totalPosts\": 20,\n    \"successRate\": 85,\n    \"postsPerPlatform\": {\n      \"twitter\": 8,\n      \"linkedin\": 6,\n      \"instagram\": 4,\n      \"threads\": 2,\n      \"facebook\": 0\n    },\n    \"failedPostsCount\": 2,\n    \"scheduledPostsCount\": 3\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth APIs",
+      "item": [
+        {
+          "name": "GET OAuth Connect (:platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Set {{platform}} to twitter, linkedin, or meta.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/oauth/{{platform}}/connect"
+          },
+          "response": [
+            {
+              "name": "302 Redirect",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/oauth/twitter/connect"
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "https://provider.example.com/oauth/authorize?..."
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "GET OAuth Callback (:platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Used by provider redirect. In Postman, set {{platform}}, {{oauthCode}}, and {{oauthState}} manually.",
+            "url": "{{baseUrl}}/api/oauth/{{platform}}/callback?code={{oauthCode}}&state={{oauthState}}"
+          },
+          "response": [
+            {
+              "name": "200 HTML Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/oauth/linkedin/callback?code=abc123&state=state123"
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ],
+              "body": "<!doctype html><html><head><title>Success</title></head><body><h1>Success</h1><p>LinkedIn connected successfully</p></body></html>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhook Examples",
+      "item": [
+        {
+          "name": "POST Telegram Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Telegram-Bot-Api-Secret-Token",
+                "value": "{{telegramWebhookSecret}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"update_id\": 123456789,\n  \"message\": {\n    \"message_id\": 100,\n    \"from\": {\n      \"id\": 111111,\n      \"is_bot\": false,\n      \"first_name\": \"Test\"\n    },\n    \"chat\": {\n      \"id\": 111111,\n      \"type\": \"private\"\n    },\n    \"date\": 1714464000,\n    \"text\": \"/start user-id\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/bot/telegram/webhook/{{telegramWebhookSecret}}"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/bot/telegram/webhook/secret"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST WhatsApp Twilio Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "X-Twilio-Signature",
+                "value": "<twilio-signature>"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "MessageSid",
+                  "value": "SMXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "type": "text"
+                },
+                {
+                  "key": "ProfileName",
+                  "value": "Test User",
+                  "type": "text"
+                },
+                {
+                  "key": "WaId",
+                  "value": "919999999999",
+                  "type": "text"
+                },
+                {
+                  "key": "Timestamp",
+                  "value": "Thu, 30 Apr 2026 08:00:00 +0000",
+                  "type": "text"
+                },
+                {
+                  "key": "From",
+                  "value": "whatsapp:+919999999999",
+                  "type": "text"
+                },
+                {
+                  "key": "Body",
+                  "value": "/start user-id",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/webhooks/whatsapp/twilio"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/webhooks/whatsapp/twilio"
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "socialAccountId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "postId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "platform",
+      "value": "twitter",
+      "type": "string"
+    },
+    {
+      "key": "oauthCode",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "oauthState",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "telegramWebhookSecret",
+      "value": "",
+      "type": "string"
     }
   ]
 }
