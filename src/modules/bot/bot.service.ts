@@ -26,7 +26,7 @@ type ConversationStep =
 interface PlatformPreview {
   content: string;
   hashtags: string[];
-  characterCount: number;
+  char_count: number;
 }
 
 interface TelegramSession {
@@ -383,6 +383,8 @@ export class BotService {
 
           const result = await postsService.publish(session.userId, {
             idea: session.idea,
+            post_type: session.postType || "announcement",
+            tone: session.tone || "professional",
             platforms: publishPlatforms,
             platformContents,
             language: "en",
@@ -471,12 +473,12 @@ export class BotService {
 
           const previewText = session.platforms
             .map((platform) => {
-              const p = generated.platforms[platform];
-              return `${this.platformLabel(platform)} (${p.characterCount} chars):\n${p.content}`;
+              const p = generated.generated[platform];
+              return `${this.platformLabel(platform)} (${p.char_count} chars):\n${p.content}`;
             })
             .join("\n\n");
 
-          session.preview = generated.platforms;
+          session.preview = generated.generated;
           session.step = "preview";
           await this.saveSession(session);
 
