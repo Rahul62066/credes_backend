@@ -28,7 +28,7 @@ export class OpenAIClient implements AiClient {
       const client = new OpenAI({ apiKey });
 
       const response = await client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         temperature: 0.7,
         max_tokens: 4096,
         response_format: { type: "json_object" },
@@ -74,7 +74,7 @@ export class OpenRouterClient implements AiClient {
       });
 
       const response = await client.chat.completions.create({
-        model: "openai/gpt-4o-mini",
+        model: "openai/gpt-4o",
         temperature: 0.7,
         max_tokens: 4096,
         response_format: { type: "json_object" },

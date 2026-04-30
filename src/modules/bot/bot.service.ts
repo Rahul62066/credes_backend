@@ -361,19 +361,12 @@ export class BotService {
         try {
           const preview = session.preview;
           const platformContents: Record<string, { content: string }> = {};
-          const publishPlatforms = session.platforms.filter((platform) => {
-            if (platform !== "instagram") {
-              return true;
-            }
-
-            return Boolean(preview[platform]?.content?.trim());
-          });
-
-          const skippedInstagram = session.platforms.includes("instagram") && !publishPlatforms.includes("instagram");
+          const publishPlatforms = session.platforms.filter((platform) => platform !== "instagram");
+          const skippedInstagram = session.platforms.includes("instagram");
 
           if (publishPlatforms.length === 0) {
             await ctx.reply(
-              "Instagram needs an image or video URL, and this Telegram flow does not collect media yet. Please start /post again and choose a non-Instagram platform, or use the API with mediaUrl for Instagram."
+              "Instagram requires an image or video URL, and Telegram does not collect media in this flow. Please start /post again and choose a non-Instagram platform, or use the API with mediaUrl for Instagram."
             );
             return;
           }
