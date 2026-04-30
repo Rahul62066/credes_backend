@@ -31,12 +31,14 @@ export interface WhatsAppSession {
     | "awaiting_user_id"
     | "awaiting_post_type"
     | "awaiting_platforms"
+    | "awaiting_instagram_media"
     | "awaiting_tone"
     | "awaiting_model"
     | "awaiting_idea"
     | "preview";
   postType?: string;
   platforms: string[];
+  instagramMediaUrl?: string; // URL for Instagram media when platform selected
   tone?: string;
   model?: string;
   idea?: string;

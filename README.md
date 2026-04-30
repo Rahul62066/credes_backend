@@ -199,9 +199,11 @@ curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 2. Copy `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and get your WhatsApp sender number (format: `whatsapp:+1234567890`).
 3. Set `TWILIO_WEBHOOK_URL` to your app base and configure webhook in Twilio console to `https://your-app.com/webhooks/whatsapp/twilio`.
 4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
-5. Same flow as Telegram: post type → platforms → tone → model → idea → preview → confirm.
-	Supported tone choices in both bots: professional, casual, witty, authoritative, friendly.
-	If Instagram is selected, the flow prompts for the required media URL before moving on.
+5. Flow: post type → platforms → (if Instagram selected: media URL) → tone → model → idea → preview → confirm.
+	- Supported tone choices: professional, casual, witty, authoritative, friendly.
+	- If Instagram is selected, the bot prompts: "Please send a public image/video URL for Instagram publishing." (must be http:// or https://).
+	- Instagram media URL is required for publishing; without it, Instagram is skipped from the post.
+	- Other platforms (Twitter/X, LinkedIn, Threads) are unaffected and publish normally.
 
 **Conversations are session-based**:
 - Telegram sessions: `telegram_session:{chatId}` (expires 30 min)

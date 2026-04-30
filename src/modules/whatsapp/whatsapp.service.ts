@@ -141,6 +141,43 @@ export class WhatsAppService {
         }
 
         session.platforms = selected;
+
+        // If Instagram is selected, ask for media URL first
+        if (selected.includes("instagram")) {
+          session.step = "awaiting_instagram_media";
+          await this.saveSession(session);
+          await this.sendMessage(phoneNumber, "Please send a public image/video URL for Instagram publishing.");
+          return;
+        }
+
+        session.step = "awaiting_tone";
+        await this.saveSession(session);
+
+        await this.sendMessage(
+          phoneNumber,
+          "Choose tone (1-5):\n" + TONES.map((t, i) => `${i + 1}. ${t}`).join("\n")
+        );
+        return;
+      }
+
+      if (session.step === "awaiting_instagram_media") {
+        const url = messageBody.trim();
+        if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+          await this.sendMessage(phoneNumber, "Invalid URL. Please send a public image/video URL starting with http:// or https://");
+          return;
+        }
+
+        try {
+          const parsed = new URL(url);
+          if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            throw new Error("Invalid protocol");
+          }
+        } catch {
+          await this.sendMessage(phoneNumber, "Invalid URL. Please send a valid public image/video URL.");
+          return;
+        }
+
+        session.instagramMediaUrl = url;
         session.step = "awaiting_tone";
         await this.saveSession(session);
 
@@ -215,11 +252,18 @@ export class WhatsAppService {
             })
             .join("\n\n");
 
+          // Add Instagram media attachment status
+          const mediaStatus = session.platforms.includes("instagram")
+            ? session.instagramMediaUrl
+              ? "\n\n✅ Instagram media: attached"
+              : "\n\n❌ Instagram media: NOT attached (will skip Instagram)"
+            : "";
+
           session.preview = generated.generated;
           session.step = "preview";
           await this.saveSession(session);
 
-          await this.sendMessage(phoneNumber, `Preview:\n\n${previewText}\n\nReply 'yes' to post or 'no' to edit.`);
+          await this.sendMessage(phoneNumber, `Preview:\n\n${previewText}${mediaStatus}\n\nReply 'yes' to post or 'no' to edit.`);
         } catch (error) {
           logger.error("WhatsApp content generation failed", error);
           await this.sendMessage(phoneNumber, "Could not generate preview. Please retry.");
@@ -237,14 +281,35 @@ export class WhatsAppService {
             return;
           }
 
+          // If Instagram is selected but no media URL, block publishing
+          if (session.platforms.includes("instagram") && !session.instagramMediaUrl) {
+            await this.sendMessage(
+              phoneNumber,
+              "❌ Instagram media URL is required. Please provide a public image/video URL first, or remove Instagram and try again."
+            );
+            session.step = "awaiting_idea";
+            session.idea = undefined;
+            session.preview = undefined;
+            await this.saveSession(session);
+            return;
+          }
+
           await this.sendMessage(phoneNumber, "Publishing...");
 
           try {
-            const platformContents: Record<string, { content: string }> = {};
+            const platformContents: Record<string, { content: string; mediaUrl?: string }> = {};
             for (const platform of session.platforms) {
+              // Skip Instagram if no media URL
+              if (platform === "instagram" && !session.instagramMediaUrl) {
+                continue;
+              }
               platformContents[platform] = {
                 content: session.preview[platform]?.content || "",
               };
+              // Add mediaUrl for Instagram
+              if (platform === "instagram" && session.instagramMediaUrl) {
+                platformContents[platform].mediaUrl = session.instagramMediaUrl;
+              }
             }
 
             const result = await postsService.publish(session.userId, {
