@@ -137,7 +137,7 @@ export class OAuthService {
     const tokenResponse = await this.exchangeLinkedInCode(code);
     const accessToken = this.requireValue(tokenResponse.access_token, "LinkedIn token response missing access token");
     const profile = await this.fetchLinkedInProfile(accessToken);
-    const handle = this.requireValue(profile.sub, "LinkedIn profile response missing sub id");
+    const handle = `urn:li:person:${this.requireValue(profile.sub, "LinkedIn profile response missing sub id")}`;
 
     await userRepository.upsertSocialAccount({
       userId: oauthState.userId,
@@ -153,18 +153,31 @@ export class OAuthService {
     const tokenResponse = await this.exchangeMetaCode(code);
     const userAccessToken = this.requireValue(tokenResponse.access_token, "Meta token response missing access token");
     const pages = await this.fetchMetaPages(userAccessToken);
-    const selectedPage = await this.findInstagramBusinessPage(pages.data || []);
+    const selectedPage = await this.findInstagramAndThreadsAccounts(pages.data || []);
 
-    if (!selectedPage) {
-      throw new BadRequest("No Instagram business account is connected to any Facebook page for this account");
+    if (!selectedPage || (!selectedPage.instagramBusinessAccountId && !selectedPage.threadsBusinessAccountId)) {
+      throw BadRequest("No Instagram or Threads business account is connected to any Facebook page for this account");
     }
 
-    await userRepository.upsertSocialAccount({
-      userId: oauthState.userId,
-      platform: Platform.INSTAGRAM,
-      accessTokenEnc: encrypt(selectedPage.accessToken),
-      handle: selectedPage.instagramBusinessAccountId,
-    });
+    // Store Instagram account if available
+    if (selectedPage.instagramBusinessAccountId) {
+      await userRepository.upsertSocialAccount({
+        userId: oauthState.userId,
+        platform: Platform.INSTAGRAM,
+        accessTokenEnc: encrypt(selectedPage.accessToken),
+        handle: selectedPage.instagramBusinessAccountId,
+      });
+    }
+
+    // Store Threads account if available (with different user ID)
+    if (selectedPage.threadsBusinessAccountId) {
+      await userRepository.upsertSocialAccount({
+        userId: oauthState.userId,
+        platform: Platform.THREADS,
+        accessTokenEnc: encrypt(selectedPage.accessToken),
+        handle: selectedPage.threadsBusinessAccountId,
+      });
+    }
   }
 
   private async exchangeTwitterCode(code: string, codeVerifier: string): Promise<TwitterTokenResponse> {
@@ -272,16 +285,16 @@ export class OAuthService {
     return body as MetaPagesResponse;
   }
 
-  private async findInstagramBusinessPage(
+  private async findInstagramAndThreadsAccounts(
     pages: Array<{ id?: string; access_token?: string }>
-  ): Promise<{ accessToken: string; instagramBusinessAccountId: string } | null> {
+  ): Promise<{ accessToken: string; instagramBusinessAccountId?: string; threadsBusinessAccountId?: string } | null> {
     for (const page of pages) {
       if (!page.id || !page.access_token) {
         continue;
       }
 
       const response = await fetch(
-        `${env.META_API_BASE_URL}/${env.META_API_VERSION}/${page.id}?fields=instagram_business_account`,
+        `${env.META_API_BASE_URL}/${env.META_API_VERSION}/${page.id}?fields=instagram_business_account,threads_business_account`,
         { headers: { Authorization: `Bearer ${page.access_token}` } }
       );
       const body = await this.safeJson(response);
@@ -290,10 +303,17 @@ export class OAuthService {
         continue;
       }
 
-      const detail = body as MetaPageDetailResponse;
+      const detail = body as MetaPageDetailResponse & { threads_business_account?: { id: string } };
       const instagramBusinessAccountId = detail.instagram_business_account?.id;
-      if (instagramBusinessAccountId) {
-        return { accessToken: page.access_token, instagramBusinessAccountId };
+      const threadsBusinessAccountId = detail.threads_business_account?.id;
+
+      // Return if we found either Instagram or Threads account
+      if (instagramBusinessAccountId || threadsBusinessAccountId) {
+        return {
+          accessToken: page.access_token,
+          instagramBusinessAccountId,
+          threadsBusinessAccountId,
+        };
       }
     }
 

@@ -239,7 +239,7 @@ export class PlatformPublisherService {
       );
     }
 
-    const baseUrl = env.META_API_BASE_URL || "https://graph.instagram.com";
+    const baseUrl = env.META_API_BASE_URL || "https://graph.facebook.com";
     const apiVersion = env.META_API_VERSION || "v19.0";
 
     // Step 1: Create media container (required by Threads API)
