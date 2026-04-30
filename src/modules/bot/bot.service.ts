@@ -142,11 +142,10 @@ export class BotService {
 
       const payload = ctx.match?.toString().trim();
       const existing = await this.getSession(chatId);
-      const userId = payload || existing?.userId;
-
-      if (!userId) {
+      // If a payload is provided treat it as a secure linking token. On dev, legacy userId linking is allowed.
+      if (!payload && !existing?.userId) {
         await ctx.reply(
-          "Welcome! Please link your account first using `/start <your_user_id>`.",
+          "Welcome! Please link your account first using `/start <linking_token>`.",
           {
             parse_mode: "Markdown",
           }
@@ -154,26 +153,49 @@ export class BotService {
         return;
       }
 
+      let userId: string | undefined = undefined;
+
+      if (payload) {
+        // Try to consume a secure token first
+        const consume = await this.consumeTelegramLinkToken(chatId, payload);
+        if (consume.ok) {
+          userId = consume.userId!;
+        } else {
+          // If token invalid and we're in development, allow legacy linking via direct userId
+          if (env.isDev) {
+            userId = payload;
+          } else {
+            await ctx.reply("Invalid or expired linking code. Please generate a new one.");
+            return;
+          }
+        }
+      }
+
+      if (!userId) userId = existing?.userId;
+
+      if (!userId) {
+        await ctx.reply("Could not link — no user id available.");
+        return;
+      }
+
       const session = this.createEmptySession(chatId, userId);
       await this.saveSession(session);
 
-      await ctx.reply(
-        [
-          "Connected successfully.",
-          "",
-          "Use /post to create content.",
-          "Use /status to view your last 5 posts.",
-          "Use /accounts to view connected social accounts.",
-          "Use /help to list all commands.",
-        ].join("\n")
-      );
+      await ctx.reply([
+        "Connected successfully.",
+        "",
+        "Use /post to create content.",
+        "Use /status to view your last 5 posts.",
+        "Use /accounts to view connected social accounts.",
+        "Use /help to list all commands.",
+      ].join("\n"));
     });
 
     this.bot.command("help", async (ctx) => {
       await ctx.reply(
         [
           "Available commands:",
-          "/start <user_id> - Link this Telegram chat to your account",
+          "/start <linking_token> - Link this Telegram chat to your account",
           "/post - Start a new AI post flow",
           "/status - Show your latest 5 posts",
           "/accounts - Show connected social accounts",
@@ -596,6 +618,32 @@ export class BotService {
   private async saveSession(session: TelegramSession): Promise<void> {
     const next = { ...session, updatedAt: new Date().toISOString() };
     await redis.set(sessionKey(session.chatId), JSON.stringify(next), "EX", SESSION_TTL_SECONDS);
+  }
+
+  /**
+   * Consume a telegram linking token and associate the chat with the user id stored in Redis.
+   * Returns { ok: true, userId } when successful, or { ok: false } when invalid/expired.
+   */
+  async consumeTelegramLinkToken(chatId: number, token: string): Promise<{ ok: boolean; message?: string; userId?: string }> {
+    const key = `telegram_link_token:{${token}}`;
+    try {
+      const linkedUserId = await redis.get(key);
+      if (!linkedUserId) {
+        return { ok: false, message: "Invalid or expired linking code" };
+      }
+
+      // Persist chat session mapping by creating a session for the chat
+      const session = this.createEmptySession(chatId, linkedUserId);
+      await this.saveSession(session);
+
+      // Remove token after successful consumption
+      await redis.del(key);
+
+      return { ok: true, userId: linkedUserId };
+    } catch (err) {
+      logger.error("Error consuming telegram link token", err);
+      return { ok: false, message: "Error consuming token" };
+    }
   }
 
   private createEmptySession(chatId: number, userId: string): TelegramSession {

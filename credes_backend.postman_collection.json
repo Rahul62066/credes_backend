@@ -561,6 +561,26 @@
             }
           ]
         }
+        ,
+        {
+          "name": "POST Generate Telegram Linking Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/user/telegram-link-token"
+          },
+          "response": []
+        }
       ]
     },
     {

@@ -199,11 +199,19 @@ curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 2. Copy `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and get your WhatsApp sender number (format: `whatsapp:+1234567890`).
 3. Set `TWILIO_WEBHOOK_URL` to your app base and configure webhook in Twilio console to `https://your-app.com/webhooks/whatsapp/twilio`.
 4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
+
 5. Flow: post type → platforms → (if Instagram selected: media URL) → tone → model → idea → preview → confirm.
 	- Supported tone choices: professional, casual, witty, authoritative, friendly.
 	- If Instagram is selected, the bot prompts: "Please send a public image/video URL for Instagram publishing." (must be http:// or https://).
 	- Instagram media URL is required for publishing; without it, Instagram is skipped from the post.
 	- Other platforms (Twitter/X, LinkedIn, Threads) are unaffected and publish normally.
+
+Telegram linking (secure):
+- Generate a short-lived linking code via the API: `POST /api/user/telegram-link-token` (requires auth).
+- The endpoint returns `{ token, expires_in_seconds }`.
+- In Telegram, link your chat by sending `/start <linking_token>` to the bot.
+- If an invalid or expired token is provided the bot replies: "Invalid or expired linking code. Please generate a new one."
+- Legacy linking via `/start <user_id>` is allowed only in development (`NODE_ENV=development`).
 
 **Conversations are session-based**:
 - Telegram sessions: `telegram_session:{chatId}` (expires 30 min)

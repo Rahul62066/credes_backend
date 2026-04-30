@@ -46,4 +46,7 @@ router.delete(
 // ── AI Keys ───────────────────────────────────────
 router.put("/ai-keys", validate(updateAiKeysSchema), userController.updateAiKeys);
 
+// ── Telegram linking token (secure) ───────────────
+router.post("/telegram-link-token", userController.generateTelegramLinkToken);
+
 export { router as userRoutes };

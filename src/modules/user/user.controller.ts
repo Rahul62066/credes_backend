@@ -4,6 +4,9 @@
  */
 import { Request, Response, NextFunction } from "express";
 import { ApiResponse } from "../../utils/apiResponse";
+import crypto from "crypto";
+import { redis } from "../../config/redis";
+import { env } from "../../config/env";
 import { userService, UserService } from "./user.service";
 import type {
   UpdateProfileInput,
@@ -13,6 +16,28 @@ import type {
 
 export class UserController {
   constructor(private service: UserService = userService) {}
+
+  // POST /api/user/telegram-link-token
+  generateTelegramLinkToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+
+      // Generate a secure random token (48 hex chars)
+      const token = crypto.randomBytes(24).toString("hex");
+      const key = `telegram_link_token:{${token}}`;
+
+      // Store in Redis with 10 minute TTL
+      await redis.set(key, userId, "EX", 60 * 10);
+
+      ApiResponse.success(res, {
+        statusCode: 200,
+        message: "Telegram linking token generated",
+        data: { token, expires_in_seconds: 60 * 10 },
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 
   // GET /api/user/profile
   getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
