@@ -22,11 +22,12 @@ enum Platform {
 }
 
 enum PostType {
-  SHORT       // tweet / short post
-  LONG        // article / blog-style
-  THREAD      // multi-part thread
-  POLL        // poll-type content
-  CAROUSEL    // carousel / slide post
+  ANNOUNCEMENT  // announcements / news
+  THREAD        // multi-part thread / thread series
+  STORY         // story / narrative content
+  PROMOTIONAL   // promotional / marketing content
+  EDUCATIONAL   // educational / how-to / guide
+  OPINION       // opinion / thought leadership
 }
 
 enum Tone {
@@ -140,7 +141,7 @@ model Post {
   id        String     @id @default(cuid())
   userId    String     @map("user_id")
   idea      String     @db.Text
-  postType  PostType   @default(SHORT) @map("post_type")
+  postType  PostType   @default(ANNOUNCEMENT) @map("post_type")
   tone      Tone       @default(PROFESSIONAL)
   language  String     @default("en")
   modelUsed String?    @map("model_used")
