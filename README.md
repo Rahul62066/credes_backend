@@ -183,6 +183,8 @@ For complete request/response examples, use the Postman collection (placeholder)
 3. Set `TELEGRAM_VERIFY_WEBHOOK=false` for local dev; set to `true` in production to require header verification.
 4. Add environment variables and deploy; the server will register the webhook automatically on boot.
 5. Bot commands: `/start <user_id>`, `/post`, `/status`, `/accounts`, `/help`
+6. Telegram post flow: choose post type → select platforms (Twitter/X, LinkedIn, Instagram, Threads, or All) → if Instagram is selected, provide the required media URL → choose tone → choose model → enter idea → preview → confirm.
+7. The All button selects Twitter/X, LinkedIn, Instagram, and Threads together, while Done keeps the manual multi-select flow.
 
 Verify webhook (optional):
 
@@ -198,6 +200,7 @@ curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
 5. Same flow as Telegram: post type → platforms → tone → model → idea → preview → confirm.
 	Supported tone choices in both bots: professional, casual, witty, authoritative, friendly.
+	If Instagram is selected, the flow prompts for the required media URL before moving on.
 
 **Conversations are session-based**:
 - Telegram sessions: `telegram_session:{chatId}` (expires 30 min)

@@ -11,6 +11,13 @@ import type { ContentPlatform, PostType, ToneType } from "../content/content.val
 import { contentService } from "../content/content.service";
 import { postsService } from "../posts/posts.service";
 import { userService } from "../user/user.service";
+import {
+  TELEGRAM_PLATFORM_OPTIONS,
+  formatSelectedPlatforms,
+  hasInstagram,
+  normalizePlatformSelection,
+  selectAllTelegramPlatforms,
+} from "./bot.utils";
 
 type BotModel = "openai" | "anthropic" | "openrouter";
 
@@ -18,6 +25,7 @@ type ConversationStep =
   | "idle"
   | "awaiting_post_type"
   | "awaiting_platforms"
+  | "awaiting_instagram_media"
   | "awaiting_tone"
   | "awaiting_model"
   | "awaiting_idea"
@@ -35,6 +43,7 @@ interface TelegramSession {
   step: ConversationStep;
   postType?: PostType;
   platforms: ContentPlatform[];
+  instagramMediaUrl?: string;
   tone?: ToneType;
   model?: BotModel;
   idea?: string;
@@ -52,13 +61,6 @@ const POST_TYPES: Array<{ label: string; value: PostType }> = [
   { label: "Promotional", value: "promotional" },
   { label: "Educational", value: "educational" },
   { label: "Opinion", value: "opinion" },
-];
-
-const PLATFORM_OPTIONS: Array<{ label: string; value: ContentPlatform }> = [
-  { label: "Twitter/X", value: "twitter" },
-  { label: "LinkedIn", value: "linkedin" },
-  { label: "Instagram", value: "instagram" },
-  { label: "Threads", value: "threads" },
 ];
 
 const TONE_OPTIONS: Array<{ label: string; value: ToneType }> = [
@@ -293,9 +295,26 @@ export class BotService {
         } else {
           session.platforms.push(platform);
         }
+        session.platforms = normalizePlatformSelection(session.platforms);
         await this.saveSession(session);
 
         await ctx.answerCallbackQuery();
+        await ctx.editMessageReplyMarkup({
+          reply_markup: this.platformKeyboard(session.platforms),
+        });
+        return;
+      }
+
+      if (data === "platform_all") {
+        if (session.step !== "awaiting_platforms") {
+          await ctx.answerCallbackQuery({ text: "Unexpected input. Use /post to restart." });
+          return;
+        }
+
+        session.platforms = selectAllTelegramPlatforms();
+        await this.saveSession(session);
+
+        await ctx.answerCallbackQuery({ text: "All platforms selected" });
         await ctx.editMessageReplyMarkup({
           reply_markup: this.platformKeyboard(session.platforms),
         });
@@ -311,11 +330,33 @@ export class BotService {
           await ctx.answerCallbackQuery({ text: "Pick at least one platform" });
           return;
         }
+
+        session.platforms = normalizePlatformSelection(session.platforms);
+        await this.saveSession(session);
+
+        if (hasInstagram(session.platforms)) {
+          session.step = "awaiting_instagram_media";
+          await this.saveSession(session);
+
+          await ctx.answerCallbackQuery();
+          await ctx.reply(
+            [
+              `Selected platforms: ${formatSelectedPlatforms(session.platforms)}`,
+              "Instagram selected: send the image or video URL to continue.",
+              "This URL is required before we can generate and publish your Instagram post.",
+            ].join("\n")
+          );
+          return;
+        }
+
         session.step = "awaiting_tone";
         await this.saveSession(session);
 
         await ctx.answerCallbackQuery();
-        await ctx.reply("Choose tone:", { reply_markup: this.toneKeyboard() });
+        await ctx.reply(
+          `Selected platforms: ${formatSelectedPlatforms(session.platforms)}\nChoose tone:`,
+          { reply_markup: this.toneKeyboard() }
+        );
         return;
       }
 
@@ -360,25 +401,23 @@ export class BotService {
 
         try {
           const preview = session.preview;
-          const platformContents: Record<string, { content: string }> = {};
-          const publishPlatforms = session.platforms.filter((platform) => platform !== "instagram");
-          const skippedInstagram = session.platforms.includes("instagram");
+          const platformContents: Record<string, { content: string; mediaUrl?: string }> = {};
+          const publishPlatforms = normalizePlatformSelection(session.platforms);
 
-          if (publishPlatforms.length === 0) {
+          if (hasInstagram(publishPlatforms) && !session.instagramMediaUrl) {
             await ctx.reply(
-              "Instagram requires an image or video URL, and Telegram does not collect media in this flow. Please start /post again and choose a non-Instagram platform, or use the API with mediaUrl for Instagram."
+              "Instagram requires a media URL. Use /post again and provide an image or video URL when prompted."
             );
             return;
           }
 
-          if (skippedInstagram) {
-            await ctx.reply(
-              "Instagram was skipped because this Telegram flow does not collect a media URL. Publishing the remaining platforms now."
-            );
-          }
-
           for (const platform of publishPlatforms) {
-            platformContents[platform] = { content: preview[platform]?.content || "" };
+            platformContents[platform] = {
+              content: preview[platform]?.content || "",
+              ...(platform === "instagram" && session.instagramMediaUrl
+                ? { mediaUrl: session.instagramMediaUrl }
+                : {}),
+            };
           }
 
           const result = await postsService.publish(session.userId, {
@@ -465,13 +504,14 @@ export class BotService {
           const generated = await contentService.generate(session.userId, {
             idea,
             postType: session.postType,
-            platforms: session.platforms,
+            platforms: normalizePlatformSelection(session.platforms),
             tone: session.tone,
             language: "en",
             model: session.model,
           });
 
-          const previewText = session.platforms
+          const selectedPlatforms = normalizePlatformSelection(session.platforms);
+          const previewText = selectedPlatforms
             .map((platform) => {
               const p = generated.generated[platform];
               return `${this.platformLabel(platform)} (${p.char_count} chars):\n${p.content}`;
@@ -482,9 +522,19 @@ export class BotService {
           session.step = "preview";
           await this.saveSession(session);
 
-          await ctx.reply(`Preview:\n\n${previewText}`, {
-            reply_markup: this.previewKeyboard(),
-          });
+          await ctx.reply(
+            [
+              `Selected platforms: ${formatSelectedPlatforms(selectedPlatforms)}`,
+              session.instagramMediaUrl ? "Instagram media URL: provided" : "",
+              "",
+              `Preview:\n\n${previewText}`,
+            ]
+              .filter(Boolean)
+              .join("\n"),
+            {
+              reply_markup: this.previewKeyboard(),
+            }
+          );
         } catch (error) {
           logger.error("Content generation failed from Telegram", error);
           await ctx.reply(
@@ -492,6 +542,29 @@ export class BotService {
           );
           await this.saveSession(this.createEmptySession(session.chatId, session.userId));
         }
+        return;
+      }
+
+      if (session.step === "awaiting_instagram_media") {
+        const mediaUrl = ctx.message.text.trim();
+        try {
+          const url = new URL(mediaUrl);
+          if (!["http:", "https:"].includes(url.protocol)) {
+            throw new Error("Invalid protocol");
+          }
+        } catch {
+          await ctx.reply("Please send a valid http(s) media URL for Instagram.");
+          return;
+        }
+
+        session.instagramMediaUrl = mediaUrl;
+        session.step = "awaiting_tone";
+        await this.saveSession(session);
+
+        await ctx.reply(
+          `Selected platforms: ${formatSelectedPlatforms(session.platforms)}\nInstagram media URL saved. Choose tone:`,
+          { reply_markup: this.toneKeyboard() }
+        );
         return;
       }
 
@@ -544,10 +617,12 @@ export class BotService {
 
   private platformKeyboard(selected: ContentPlatform[]): InlineKeyboard {
     const kb = new InlineKeyboard();
-    PLATFORM_OPTIONS.forEach((platform) => {
+    TELEGRAM_PLATFORM_OPTIONS.forEach((platform) => {
       const checked = selected.includes(platform.value) ? "✅ " : "";
       kb.text(`${checked}${platform.label}`, `platform_toggle:${platform.value}`).row();
     });
+    const allSelected = normalizePlatformSelection(selected).length === TELEGRAM_PLATFORM_OPTIONS.length;
+    kb.text(`${allSelected ? "✅ " : ""}All`, "platform_all").row();
     kb.text("Done", "platform_done");
     return kb;
   }
@@ -577,7 +652,7 @@ export class BotService {
   }
 
   private platformLabel(platform: ContentPlatform): string {
-    const hit = PLATFORM_OPTIONS.find((p) => p.value === platform);
+    const hit = TELEGRAM_PLATFORM_OPTIONS.find((p) => p.value === platform);
     return hit?.label || platform;
   }
 
