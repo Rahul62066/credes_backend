@@ -72,11 +72,12 @@ Recommended Render setup:
 	- Branch: your main branch
 	- Build command: `npm ci && npm run build && npx prisma generate`
 	- Start command: `npx prisma migrate deploy && npx prisma generate && npm run start`
-	- Environment: set the variables listed in `.env.example` (see below)
+	- Environment: set the variables listed in `.env.example` (see below) and leave `RUN_WORKERS=false`
 
 - Background Worker (type: Worker) — optional but recommended for stability
 	- Build command: same as Web Service
 	- Start command: `npx prisma migrate deploy && npx prisma generate && npm run start:worker`
+	- Environment: same as the web service, but set `RUN_WORKERS=true`
 
 Notes:
 - We run `npx prisma migrate deploy` at start to apply migrations in production safely (this does not generate new migrations).
@@ -234,7 +235,7 @@ For complete request/response examples, use the Postman collection (placeholder)
 2. Choose a `TELEGRAM_WEBHOOK_SECRET` (random string) and set `TELEGRAM_WEBHOOK_URL` to your app base (no path) — e.g. `https://credes-backend-xxxxx.onrender.com`.
 3. Set `TELEGRAM_VERIFY_WEBHOOK=false` for local dev; set to `true` in production to require header verification.
 4. Add environment variables and deploy; the server will register the webhook automatically on boot.
-5. Bot commands: `/start <user_id>`, `/post`, `/status`, `/accounts`, `/help`
+5. Bot commands: `/start <linking_token>`, `/post`, `/status`, `/accounts`, `/help`
 6. Telegram post flow: choose post type → select platforms (Twitter/X, LinkedIn, Instagram, Threads, or All) → if Instagram is selected, provide the required media URL → choose tone → choose model → enter idea → preview → confirm.
 7. The All button selects Twitter/X, LinkedIn, Instagram, and Threads together, while Done keeps the manual multi-select flow.
 8. Instagram media prompt: `Please send a public image/video URL for Instagram publishing.`
@@ -250,7 +251,7 @@ curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 1. Create a Twilio account and enable WhatsApp integration.
 2. Copy `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and get your WhatsApp sender number (format: `whatsapp:+1234567890`).
 3. Set `TWILIO_WEBHOOK_URL` to your app base and configure webhook in Twilio console to `https://your-app.com/webhooks/whatsapp/twilio`.
-4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
+4. Users start with `/start <linking_token>` and follow numeric menu selections (1-6, etc.). In development, `/start <user_id>` is still allowed.
 
 5. Flow: post type → platforms → (if Instagram selected: media URL) → tone → model → idea → preview → confirm.
 	- Supported tone choices: professional, casual, witty, authoritative, friendly.
@@ -299,7 +300,7 @@ Unauthenticated routes are limited by IP. If Redis is unreachable, rate limiting
   - **Twitter/X & LinkedIn:** Text-only posts supported (OAuth tokens required)
   - **Instagram:** Requires image/video URL (`mediaUrl`); plain text posts not supported by Meta API
 	- **Threads:** Supports text with optional image/video URL (`mediaUrl`); container creation required by Meta API; publishing works only when Meta exposes a `threads_business_account` for the connected page
-- WhatsApp/Twilio and some advanced social publishing flows are still under development.
+- WhatsApp/Twilio and some advanced social publishing flows are implemented but should still be verified in staging before production rollout.
 - If secrets (e.g., `TELEGRAM_BOT_TOKEN`, `TWILIO_AUTH_TOKEN`) were exposed in repo history, rotate them immediately.
 - Webhook signature verification should be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`).
 

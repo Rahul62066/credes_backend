@@ -31,4 +31,4 @@ COPY prisma ./prisma
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "npx prisma migrate resolve --rolled-back 20260430000001_align_posttype_enum || true && npx prisma migrate deploy && npm run start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]

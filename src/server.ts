@@ -16,10 +16,16 @@ async function bootstrap(): Promise<void> {
     logger.info(`📝 Environment: ${env.NODE_ENV}`);
   });
 
-  // ── Start BullMQ workers (only outside test) ──────
+  // ── Start BullMQ workers (only when enabled) ──────
   if (!env.isTest) {
-    await import("./workers");
-    logger.info("👷 Workers initialised");
+    if (env.RUN_WORKERS) {
+      await import("./workers");
+      logger.info("👷 Workers initialised");
+    } else {
+      logger.info("👷 Workers not started (RUN_WORKERS=false)");
+    }
+
+    // Initialize bots in web process (bot services are lightweight)
     await botService.initialize();
     logger.info("🤖 Telegram bot initialised");
     whatsappService.initialize();

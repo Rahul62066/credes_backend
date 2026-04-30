@@ -47,37 +47,72 @@ export function getRedisConfig(): { host?: string; port?: number; password?: str
 }
 
 const redisConfig = getRedisConfig();
+
+/**
+ * When running tests, avoid connecting to a real Redis instance.
+ * Provide a lightweight in-memory stub implementing the minimal API used by the app.
+ */
+class InMemoryRedis {
+  private store = new Map<string, string>();
+  async get(key: string) {
+    return this.store.get(key) ?? null;
+  }
+  async set(key: string, value: string, _mode?: string, _ttl?: number) {
+    // Support `set(key, value, 'EX', seconds)` call signature
+    this.store.set(key, value);
+    return "OK";
+  }
+  async del(key: string) {
+    return this.store.delete(key) ? 1 : 0;
+  }
+  async expire(_key: string, _seconds: number) {
+    // TTL not enforced for tests
+    return 1;
+  }
+  async quit() {
+    return "OK";
+  }
+}
+
 /**
  * Shared Redis connection instance.
- * Used by BullMQ workers and application-level caching.
+ * Use an in-memory stub during tests to avoid external dependency.
  */
-export const redis = new Redis(
-  redisConfig.url
-    ? redisConfig.url
-    : {
-        host: redisConfig.host,
-        port: redisConfig.port,
-        password: redisConfig.password,
-        tls: redisConfig.tls ? {} : undefined,
-      },
-  {
-    maxRetriesPerRequest: null, // Required by BullMQ
-    enableReadyCheck: false,
-  }
-);
+export const redis = env.isTest
+  ? (new InMemoryRedis() as unknown as Redis)
+  : new Redis(
+      redisConfig.url
+        ? redisConfig.url
+        : {
+            host: redisConfig.host,
+            port: redisConfig.port,
+            password: redisConfig.password,
+            tls: redisConfig.tls ? {} : undefined,
+          },
+      {
+        maxRetriesPerRequest: null, // Required by BullMQ
+        enableReadyCheck: false,
+      }
+    );
 
-redis.on("connect", () => {
-  console.log("✅ Redis connected");
-});
+if (!env.isTest) {
+  redis.on("connect", () => {
+    console.log("✅ Redis connected");
+  });
 
-redis.on("error", (err) => {
-  console.error("❌ Redis connection error:", err.message);
-});
+  redis.on("error", (err) => {
+    console.error("❌ Redis connection error:", err.message);
+  });
+}
 
 /**
  * Returns a new Redis connection (for BullMQ workers that need their own connection).
  */
 export function createRedisConnection(): Redis {
+  if (env.isTest) {
+    return new InMemoryRedis() as unknown as Redis;
+  }
+
   if (redisConfig.url) {
     return new Redis(redisConfig.url, {
       maxRetriesPerRequest: null,

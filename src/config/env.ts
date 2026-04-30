@@ -78,6 +78,8 @@ export const env = {
   isDev: process.env.NODE_ENV === "development",
   isProd: process.env.NODE_ENV === "production",
   isTest: process.env.NODE_ENV === "test",
+  // Runtime flags
+  RUN_WORKERS: (process.env.RUN_WORKERS || "false") === "true",
 } as const;
 
 // Rate limit defaults

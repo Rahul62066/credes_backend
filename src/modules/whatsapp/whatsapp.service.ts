@@ -67,26 +67,54 @@ export class WhatsAppService {
     try {
       let session = await this.getSession(phoneNumber);
 
-      // Handle /start command
+      // Handle /start command — accept secure linking tokens (same as Telegram)
       if (messageBody.startsWith("/start")) {
-        const userId = messageBody.replace("/start", "").trim();
-        if (!userId) {
+        const payload = messageBody.replace("/start", "").trim();
+
+        if (!payload) {
           await this.sendMessage(
             phoneNumber,
-            "Please use: /start <your_user_id> to link your account."
+            "Please use: /start <linking_token> to link your account."
           );
           return;
         }
 
-        session = this.createEmptySession(phoneNumber);
-        session.userId = userId;
-        session.step = "awaiting_post_type";
-        await this.saveSession(session);
+        // Try consuming a short-lived linking token stored in Redis
+        try {
+          const key = `telegram_link_token:{${payload}}`;
+          const linkedUserId = await redis.get(key);
+          if (linkedUserId) {
+            session = this.createEmptySession(phoneNumber);
+            session.userId = linkedUserId;
+            session.step = "awaiting_post_type";
+            await this.saveSession(session);
+            await redis.del(key);
+            await this.sendMessage(
+              phoneNumber,
+              "✅ Connected! Now choose a post type:\n" + POST_TYPES.map((t) => t.label).join("\n")
+            );
+            return;
+          }
+        } catch (err) {
+          logger.warn("Error checking linking token for WhatsApp", err);
+        }
 
-        await this.sendMessage(
-          phoneNumber,
-          "✅ Connected! Now choose a post type:\n" + POST_TYPES.map((t) => t.label).join("\n")
-        );
+        // Fallback: in dev allow legacy linking via raw userId
+        if (env.isDev) {
+          const userId = payload;
+          session = this.createEmptySession(phoneNumber);
+          session.userId = userId;
+          session.step = "awaiting_post_type";
+          await this.saveSession(session);
+
+          await this.sendMessage(
+            phoneNumber,
+            "✅ Connected (dev mode)! Now choose a post type:\n" + POST_TYPES.map((t) => t.label).join("\n")
+          );
+          return;
+        }
+
+        await this.sendMessage(phoneNumber, "Invalid or expired linking code. Please generate a new one.");
         return;
       }
 
