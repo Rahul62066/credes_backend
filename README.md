@@ -185,6 +185,7 @@ For complete request/response examples, use the Postman collection (placeholder)
 5. Bot commands: `/start <user_id>`, `/post`, `/status`, `/accounts`, `/help`
 6. Telegram post flow: choose post type → select platforms (Twitter/X, LinkedIn, Instagram, Threads, or All) → if Instagram is selected, provide the required media URL → choose tone → choose model → enter idea → preview → confirm.
 7. The All button selects Twitter/X, LinkedIn, Instagram, and Threads together, while Done keeps the manual multi-select flow.
+8. Instagram media prompt: `Please send a public image/video URL for Instagram publishing.`
 
 Verify webhook (optional):
 

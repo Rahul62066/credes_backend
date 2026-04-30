@@ -13,8 +13,10 @@ import { postsService } from "../posts/posts.service";
 import { userService } from "../user/user.service";
 import {
   TELEGRAM_PLATFORM_OPTIONS,
+  TELEGRAM_INSTAGRAM_MEDIA_PROMPT,
   formatSelectedPlatforms,
   hasInstagram,
+  isValidPublicMediaUrl,
   normalizePlatformSelection,
   selectAllTelegramPlatforms,
 } from "./bot.utils";
@@ -176,6 +178,8 @@ export class BotService {
           "/status - Show your latest 5 posts",
           "/accounts - Show connected social accounts",
           "/help - Show this help message",
+          "Telegram flow: post type → platforms (Twitter/X, LinkedIn, Instagram, Threads, or All) → Instagram media URL if needed → tone → model → idea → preview → confirm",
+          `Instagram media prompt: ${TELEGRAM_INSTAGRAM_MEDIA_PROMPT}`,
         ].join("\n")
       );
     });
@@ -340,11 +344,7 @@ export class BotService {
 
           await ctx.answerCallbackQuery();
           await ctx.reply(
-            [
-              `Selected platforms: ${formatSelectedPlatforms(session.platforms)}`,
-              "Instagram selected: send the image or video URL to continue.",
-              "This URL is required before we can generate and publish your Instagram post.",
-            ].join("\n")
+            `Selected platforms: ${formatSelectedPlatforms(session.platforms)}\n${TELEGRAM_INSTAGRAM_MEDIA_PROMPT}`
           );
           return;
         }
@@ -525,7 +525,11 @@ export class BotService {
           await ctx.reply(
             [
               `Selected platforms: ${formatSelectedPlatforms(selectedPlatforms)}`,
-              session.instagramMediaUrl ? "Instagram media URL: provided" : "",
+              hasInstagram(selectedPlatforms)
+                ? session.instagramMediaUrl
+                  ? "Instagram media: attached"
+                  : "Instagram media: not attached"
+                : "Instagram media: not attached",
               "",
               `Preview:\n\n${previewText}`,
             ]
@@ -547,13 +551,10 @@ export class BotService {
 
       if (session.step === "awaiting_instagram_media") {
         const mediaUrl = ctx.message.text.trim();
-        try {
-          const url = new URL(mediaUrl);
-          if (!["http:", "https:"].includes(url.protocol)) {
-            throw new Error("Invalid protocol");
-          }
-        } catch {
-          await ctx.reply("Please send a valid http(s) media URL for Instagram.");
+        if (!isValidPublicMediaUrl(mediaUrl)) {
+          await ctx.reply(
+            `${TELEGRAM_INSTAGRAM_MEDIA_PROMPT}\nThe URL must start with http:// or https:// and be a valid public image/video URL.`
+          );
           return;
         }
 
@@ -562,7 +563,7 @@ export class BotService {
         await this.saveSession(session);
 
         await ctx.reply(
-          `Selected platforms: ${formatSelectedPlatforms(session.platforms)}\nInstagram media URL saved. Choose tone:`,
+          `Selected platforms: ${formatSelectedPlatforms(session.platforms)}\nInstagram media: attached\nChoose tone:`,
           { reply_markup: this.toneKeyboard() }
         );
         return;
