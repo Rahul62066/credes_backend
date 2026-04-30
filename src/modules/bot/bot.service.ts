@@ -359,13 +359,14 @@ export class BotService {
         await ctx.reply("Publishing now...");
 
         try {
+          const preview = session.preview;
           const platformContents: Record<string, { content: string }> = {};
           const publishPlatforms = session.platforms.filter((platform) => {
             if (platform !== "instagram") {
               return true;
             }
 
-            return Boolean(session.preview[platform]?.content?.trim());
+            return Boolean(preview[platform]?.content?.trim());
           });
 
           const skippedInstagram = session.platforms.includes("instagram") && !publishPlatforms.includes("instagram");
@@ -384,7 +385,7 @@ export class BotService {
           }
 
           for (const platform of publishPlatforms) {
-            platformContents[platform] = { content: session.preview[platform]?.content || "" };
+            platformContents[platform] = { content: preview[platform]?.content || "" };
           }
 
           const result = await postsService.publish(session.userId, {

@@ -166,6 +166,7 @@ Flow notes:
 - Callback routes validate state, exchange the code, fetch the profile, and upsert into `social_accounts` with encrypted tokens.
 - Successful callbacks return a small HTML success page instead of JSON.
 - Failed callbacks return a small HTML error page instead of JSON.
+- Threads support is best-effort: the Meta flow looks for a `threads_business_account` on connected Facebook pages, so availability depends on the page, app permissions, and the user's Threads-enabled Meta setup.
 
 For complete request/response examples, use the Postman collection (placeholder). I can add the collection file on request.
 
@@ -226,7 +227,7 @@ Unauthenticated routes are limited by IP. If Redis is unreachable, rate limiting
 - **Platform publishing requirements:**
   - **Twitter/X & LinkedIn:** Text-only posts supported (OAuth tokens required)
   - **Instagram:** Requires image/video URL (`mediaUrl`); plain text posts not supported by Meta API
-  - **Threads:** Supports text with optional image/video URL (`mediaUrl`); container creation required by Meta API
+	- **Threads:** Supports text with optional image/video URL (`mediaUrl`); container creation required by Meta API; publishing works only when Meta exposes a `threads_business_account` for the connected page
 - WhatsApp/Twilio and some advanced social publishing flows are still under development.
 - If secrets (e.g., `TELEGRAM_BOT_TOKEN`, `TWILIO_AUTH_TOKEN`) were exposed in repo history, rotate them immediately.
 - Webhook signature verification should be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`).
