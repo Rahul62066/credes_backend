@@ -360,13 +360,36 @@ export class BotService {
 
         try {
           const platformContents: Record<string, { content: string }> = {};
-          for (const platform of session.platforms) {
+          const publishPlatforms = session.platforms.filter((platform) => {
+            if (platform !== "instagram") {
+              return true;
+            }
+
+            return Boolean(session.preview[platform]?.content?.trim());
+          });
+
+          const skippedInstagram = session.platforms.includes("instagram") && !publishPlatforms.includes("instagram");
+
+          if (publishPlatforms.length === 0) {
+            await ctx.reply(
+              "Instagram needs an image or video URL, and this Telegram flow does not collect media yet. Please start /post again and choose a non-Instagram platform, or use the API with mediaUrl for Instagram."
+            );
+            return;
+          }
+
+          if (skippedInstagram) {
+            await ctx.reply(
+              "Instagram was skipped because this Telegram flow does not collect a media URL. Publishing the remaining platforms now."
+            );
+          }
+
+          for (const platform of publishPlatforms) {
             platformContents[platform] = { content: session.preview[platform]?.content || "" };
           }
 
           const result = await postsService.publish(session.userId, {
             idea: session.idea,
-            platforms: session.platforms,
+            platforms: publishPlatforms,
             platformContents,
             language: "en",
             model: session.model,
