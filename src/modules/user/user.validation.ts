@@ -12,10 +12,9 @@ export const updateProfileSchema = z.object({
     .enum([
       "PROFESSIONAL",
       "CASUAL",
-      "HUMOROUS",
-      "INSPIRATIONAL",
-      "EDUCATIONAL",
-      "STORYTELLING",
+      "WITTY",
+      "AUTHORITATIVE",
+      "FRIENDLY",
     ])
     .optional(),
   defaultLanguage: z.string().min(2).max(10).optional(),

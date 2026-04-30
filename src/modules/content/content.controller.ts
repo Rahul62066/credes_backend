@@ -17,7 +17,6 @@ export class ContentController {
 
       ApiResponse.success(res, {
         statusCode: 200,
-        message: "Content generated successfully",
         data: result,
       });
     } catch (err) {

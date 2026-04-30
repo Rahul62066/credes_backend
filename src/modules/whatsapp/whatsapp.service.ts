@@ -210,12 +210,12 @@ export class WhatsAppService {
 
           const previewText = session.platforms
             .map((platform) => {
-              const p = generated.platforms[platform];
-              return `${platform}: (${p.characterCount} chars)\n${p.content}`;
+              const p = generated.generated[platform];
+              return `${platform}: (${p.char_count} chars)\n${p.content}`;
             })
             .join("\n\n");
 
-          session.preview = generated.platforms;
+          session.preview = generated.generated;
           session.step = "preview";
           await this.saveSession(session);
 
@@ -249,6 +249,8 @@ export class WhatsAppService {
 
             const result = await postsService.publish(session.userId, {
               idea: session.idea,
+              post_type: session.postType as PostType,
+              tone: session.tone as ToneType,
               platforms: session.platforms as ContentPlatform[],
               platformContents,
               language: "en",

@@ -37,17 +37,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ── Health check ────────────────────────────────────
-app.get("/", (_req, res) => {
-  ApiResponse.success(res, {
-    message: "Postly API is working perfectly 🚀",
-    data: {
-      status: "ok",
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-      environment: env.NODE_ENV,
-    },
-  });
-});
 app.get("/health", (_req, res) => {
   ApiResponse.success(res, {
     message: "Postly API is healthy 🚀",

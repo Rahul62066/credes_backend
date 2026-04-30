@@ -118,16 +118,20 @@ Content / AI (rate-limited: 10 req/15min per user)
 
 - `POST /api/content/generate` — generate AI content
 	- body: `{ idea, post_type, platforms, tone, model }`
-	- returns: per-platform preview, warnings (if any)
+	- supported tones: `professional`, `casual`, `witty`, `authoritative`, `friendly`
+	- returns: `data.generated` per platform (`content`, `char_count`, `hashtags`) with `model_used` and `tokens_used`
 
 Publishing (rate-limited: 20 req/hour per user)
 
 - `POST /api/posts/publish` — create a post and enqueue platform jobs
-	- body: `{ idea, platforms, platformContents, language, model }`
+	- body: `{ idea, post_type, tone, platforms, platformContents, language, model }`
+	- `publish_at` is not required for publish
 	- `platformContents`: object mapping platform names to `{ content, mediaUrl? }`
 	- **Instagram & Threads require `mediaUrl`** (image or video URL); plain text posts not supported
 	- returns: created post, platform statuses
-- `POST /api/posts/schedule` — schedule a post for future publishing (same body as publish)
+- `POST /api/posts/schedule` — schedule a post for future publishing
+	- body: `{ idea, post_type, tone, platforms, platformContents, language, model, publish_at }`
+	- `publish_at` is required and must be a future ISO datetime
 - `GET /api/posts?page=1&limit=10` — list user's posts (supports filtering by status, platform, date range)
 - `GET /api/posts/:id` — returns post and platform statuses
 - `POST /api/posts/:id/retry` — retry failed platforms
@@ -193,6 +197,7 @@ curl https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo
 3. Set `TWILIO_WEBHOOK_URL` to your app base and configure webhook in Twilio console to `https://your-app.com/webhooks/whatsapp/twilio`.
 4. Users start with `/start <user_id>` and follow numeric menu selections (1-6, etc.).
 5. Same flow as Telegram: post type → platforms → tone → model → idea → preview → confirm.
+	Supported tone choices in both bots: professional, casual, witty, authoritative, friendly.
 
 **Conversations are session-based**:
 - Telegram sessions: `telegram_session:{chatId}` (expires 30 min)

@@ -15,6 +15,23 @@ export const postStatusFilterEnum = z.enum([
   "cancelled",
 ]);
 
+export const postTypeEnum = z.enum([
+  "announcement",
+  "thread",
+  "story",
+  "promotional",
+  "educational",
+  "opinion",
+]);
+
+export const toneEnum = z.enum([
+  "professional",
+  "casual",
+  "witty",
+  "authoritative",
+  "friendly",
+]);
+
 const platformContentSchema = z.object({
   content: z.string().min(1, "Content is required"),
   mediaUrl: z.string().url("mediaUrl must be a valid URL").optional(), // For Instagram, Threads
@@ -22,6 +39,8 @@ const platformContentSchema = z.object({
 
 export const publishPostSchema = z.object({
   idea: z.string().min(1, "Idea is required").max(500, "Idea must be 500 characters or less"),
+  post_type: postTypeEnum,
+  tone: toneEnum,
   platforms: z.array(platformEnum).min(1, "At least one platform is required"),
   platformContents: z.record(platformEnum, platformContentSchema),
   language: z.enum(["en", "hi", "ar"]).default("en"),

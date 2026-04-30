@@ -40,7 +40,7 @@ export interface WhatsAppSession {
   tone?: string;
   model?: string;
   idea?: string;
-  preview?: Record<string, { content: string; hashtags: string[]; characterCount: number }>;
+  preview?: Record<string, { content: string; hashtags: string[]; char_count: number }>;
   updatedAt: string;
 }
 

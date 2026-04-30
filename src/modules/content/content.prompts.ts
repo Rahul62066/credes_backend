@@ -74,7 +74,7 @@ RULES:
 5. "hashtags" array should list the hashtags used (without the # symbol).
 6. Respect each platform's character limit strictly.
 7. Content must be original, not generic filler text.
-8. Adapt writing style to the requested tone.
+8. Adapt writing style to the requested tone. Supported tones are: professional, casual, witty, authoritative, friendly.
 9. Write in the requested language.
 10. Never include markdown fences or extra keys; return raw JSON only.
 
@@ -125,6 +125,8 @@ export function buildUserPrompt(params: {
 **Post type:** ${postType}
 **Tone:** ${tone}
 **Language:** ${langName}
+
+Supported tone values: professional, casual, witty, authoritative, friendly.
 
 ## Platform requirements
 

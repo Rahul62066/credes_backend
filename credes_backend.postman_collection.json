@@ -396,7 +396,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"PROFESSIONAL\",\n  \"defaultLanguage\": \"en\"\n}"
+              "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"WITTY\",\n  \"defaultLanguage\": \"en\"\n}"
             },
             "url": "{{baseUrl}}/api/user/profile"
           },
@@ -413,7 +413,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"PROFESSIONAL\",\n  \"defaultLanguage\": \"en\"\n}"
+                  "raw": "{\n  \"name\": \"Postly User Updated\",\n  \"bio\": \"Building social automation backend\",\n  \"defaultTone\": \"WITTY\",\n  \"defaultLanguage\": \"en\"\n}"
                 },
                 "url": "{{baseUrl}}/api/user/profile"
               },

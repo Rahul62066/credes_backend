@@ -7,6 +7,7 @@ import {
   PostStatus,
   PlatformPostStatus,
   PostType,
+  Tone,
   type Prisma,
 } from "../../../generated/prisma";
 
@@ -14,12 +15,14 @@ export class PostsRepository {
   async createPostWithPlatformPosts(data: {
     userId: string;
     idea: string;
+    postType: PostType;
+    tone: Tone;
     language: string;
     modelUsed?: string;
     publishAt?: Date;
     status: PostStatus;
     platformContents: Array<{ platform: Platform; content: string; mediaUrl?: string; status: PlatformPostStatus }>;
-  }) {
+  }): Promise<Prisma.PostGetPayload<{ include: { platformPosts: true } }>> {
     return prisma.post.create({
       data: {
         userId: data.userId,
@@ -27,7 +30,8 @@ export class PostsRepository {
         language: data.language,
         modelUsed: data.modelUsed,
         publishAt: data.publishAt,
-        postType: PostType.ANNOUNCEMENT,
+        postType: data.postType,
+        tone: data.tone,
         status: data.status,
         platformPosts: {
           create: data.platformContents,

@@ -5,6 +5,8 @@ import {
   Platform,
   PostStatus,
   PlatformPostStatus,
+  PostType,
+  Tone,
 } from "../../../generated/prisma";
 import { NotFound, BadRequest } from "../../utils/appError";
 import { postQueue } from "../queue/queue";
@@ -39,6 +41,23 @@ const PLATFORM_MAP: Record<string, Platform> = {
   threads: Platform.THREADS,
 };
 
+const POST_TYPE_MAP: Record<string, PostType> = {
+  announcement: PostType.ANNOUNCEMENT,
+  thread: PostType.THREAD,
+  story: PostType.STORY,
+  promotional: PostType.PROMOTIONAL,
+  educational: PostType.EDUCATIONAL,
+  opinion: PostType.OPINION,
+};
+
+const TONE_MAP: Record<string, Tone> = {
+  professional: Tone.PROFESSIONAL,
+  casual: Tone.CASUAL,
+  witty: Tone.WITTY,
+  authoritative: Tone.AUTHORITATIVE,
+  friendly: Tone.FRIENDLY,
+};
+
 function toApiPlatform(platform: Platform): "twitter" | "linkedin" | "instagram" | "threads" {
   const value = platform.toLowerCase();
   if (value === "twitter" || value === "linkedin" || value === "instagram" || value === "threads") {
@@ -57,9 +76,19 @@ function toApiPlatformStatus(
   return "cancelled";
 }
 
+function toApiPostType(postType: PostType): string {
+  return postType.toLowerCase();
+}
+
+function toApiTone(tone: Tone): string {
+  return tone.toLowerCase();
+}
+
 function mapPostForApi(post: {
   id: string;
   idea: string;
+  postType: PostType;
+  tone: Tone;
   status: PostStatus;
   publishAt: Date | null;
   createdAt: Date;
@@ -79,6 +108,8 @@ function mapPostForApi(post: {
   return {
     id: post.id,
     idea: post.idea,
+    post_type: toApiPostType(post.postType),
+    tone: toApiTone(post.tone),
     status: post.status.toLowerCase(),
     publishAt: post.publishAt,
     createdAt: post.createdAt,
@@ -104,6 +135,8 @@ export class PostsService {
     const post = await this.repo.createPostWithPlatformPosts({
       userId,
       idea: input.idea,
+      postType: POST_TYPE_MAP[input.post_type],
+      tone: TONE_MAP[input.tone],
       language: input.language,
       modelUsed: input.model,
       status: PostStatus.PROCESSING,
@@ -129,6 +162,8 @@ export class PostsService {
     const post = await this.repo.createPostWithPlatformPosts({
       userId,
       idea: input.idea,
+      postType: POST_TYPE_MAP[input.post_type],
+      tone: TONE_MAP[input.tone],
       language: input.language,
       modelUsed: input.model,
       publishAt,

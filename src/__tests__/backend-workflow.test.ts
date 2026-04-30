@@ -135,6 +135,8 @@ describe("Backend workflow integration", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "Launch feature update",
+        post_type: "announcement",
+        tone: "professional",
         platforms: ["twitter", "linkedin"],
         platformContents: {
           twitter: { content: "Twitter content #tag1 #tag2" },
@@ -150,6 +152,15 @@ describe("Backend workflow integration", () => {
     expect(addSpy).toHaveBeenCalledTimes(2);
     expect(res.body.data.platformPosts).toHaveLength(2);
     expect(res.body.data.status).toBe("processing");
+    expect(res.body.data.post_type).toBe("announcement");
+    expect(res.body.data.tone).toBe("professional");
+
+    // Verify post_type and tone are stored in database
+    const storedPost = await prisma.post.findUnique({
+      where: { id: res.body.data.id },
+    });
+    expect(storedPost?.postType).toBe("ANNOUNCEMENT");
+    expect(storedPost?.tone).toBe("PROFESSIONAL");
 
     addSpy.mockRestore();
   });
@@ -171,6 +182,8 @@ describe("Backend workflow integration", () => {
       .set("Authorization", `Bearer ${accessToken}`)
       .send({
         idea: "Status check idea",
+        post_type: "educational",
+        tone: "witty",
         platforms: ["twitter", "linkedin"],
         platformContents: {
           twitter: { content: "twitter status content #tag1 #tag2" },
@@ -191,12 +204,20 @@ describe("Backend workflow integration", () => {
 
     expect(statusRes.status).toBe(200);
     expect(statusRes.body.data.id).toBe(postId);
+    expect(statusRes.body.data.post_type).toBe("educational");
+    expect(statusRes.body.data.tone).toBe("witty");
     expect(statusRes.body.data.platformPosts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ platform: "twitter", status: "queued" }),
         expect.objectContaining({ platform: "linkedin", status: "queued" }),
       ])
     );
+
+    const storedStatusPost = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+    expect(storedStatusPost?.postType).toBe("EDUCATIONAL");
+    expect(storedStatusPost?.tone).toBe("WITTY");
 
     addSpy.mockRestore();
   });

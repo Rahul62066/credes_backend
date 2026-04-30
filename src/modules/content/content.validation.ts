@@ -86,3 +86,15 @@ export function toGenerateServiceInput(input: GenerateContentInput): GenerateSer
 
 export type PlatformContentOutput = z.infer<typeof platformContentOutputSchema>;
 export type GenerateOutput = z.infer<typeof generateOutputSchema>;
+
+export interface GeneratedPlatformResult {
+  content: string;
+  hashtags: string[];
+  char_count: number;
+}
+
+export interface GenerateServiceResponse {
+  generated: Record<string, GeneratedPlatformResult>;
+  model_used: string;
+  tokens_used: number;
+}

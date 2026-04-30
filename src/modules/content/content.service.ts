@@ -18,6 +18,7 @@ import { buildSystemPrompt, buildUserPrompt } from "./content.prompts";
 import {
   generateOutputSchema,
   type GenerateServiceInput,
+  type GenerateServiceResponse,
   type GenerateOutput,
   type ContentPlatform,
 } from "./content.validation";
@@ -37,7 +38,7 @@ const PLATFORM_LIMITS: Record<
 export class ContentService {
   constructor(private repo: ContentRepository = contentRepository) {}
 
-  async generate(userId: string, input: GenerateServiceInput) {
+  async generate(userId: string, input: GenerateServiceInput): Promise<GenerateServiceResponse> {
     // 1. Resolve API key
     const apiKey = await this.resolveApiKey(userId, input.model);
 
@@ -65,14 +66,35 @@ export class ContentService {
     // 5. Validate & annotate
     const result = this.validateAndAnnotate(parsed, input.platforms);
 
+    const generated = Object.fromEntries(
+      Object.entries(result).map(([platform, data]) => [
+        platform,
+        {
+          content: data.content,
+          hashtags: data.hashtags,
+          char_count: data.characterCount,
+        },
+      ])
+    );
+
     return {
-      platforms: result,
-      model: input.model,
+      generated,
+      model_used: this.modelIdentifier(input.model),
       tokens_used: aiResponse.tokensUsed,
-      postType: input.postType,
-      tone: input.tone,
-      language: input.language,
     };
+  }
+
+  private modelIdentifier(model: GenerateServiceInput["model"]): string {
+    switch (model) {
+      case "openai":
+        return "openai/gpt-4o-mini";
+      case "anthropic":
+        return "anthropic/claude-sonnet-4-20250514";
+      case "openrouter":
+        return "openrouter/openai/gpt-4o-mini";
+      default:
+        return model;
+    }
   }
 
   // ── Private helpers ─────────────────────────────
