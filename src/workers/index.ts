@@ -63,7 +63,7 @@ export const postWorker = new Worker(
       );
     }
 
-    await platformPublisherService.publish(platformEnum, {
+    const publishResult = await platformPublisherService.publish(platformEnum, {
       userId,
       postId,
       platformPostId,
@@ -82,6 +82,8 @@ export const postWorker = new Worker(
       attempts: job.attemptsMade + 1,
       publishedAt: new Date(),
       errorMessage: null,
+      providerPostId: publishResult.providerPostId ?? null,
+      providerRawResponse: publishResult.providerRaw ?? null,
     });
 
     await postsRepository.recomputePostStatus(postId);

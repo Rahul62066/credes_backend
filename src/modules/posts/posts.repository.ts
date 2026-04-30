@@ -116,6 +116,8 @@ export class PostsRepository {
         status: true,
         publishedAt: true,
         errorMessage: true,
+        providerPostId: true,
+        providerRawResponse: true,
         attempts: true,
         createdAt: true,
         updatedAt: true,
@@ -140,6 +142,8 @@ export class PostsRepository {
     attempts?: number;
     errorMessage?: string | null;
     publishedAt?: Date | null;
+    providerPostId?: string | null;
+    providerRawResponse?: Prisma.JsonValue | null;
   }) {
     return prisma.platformPost.update({
       where: { id: params.platformPostId },
@@ -148,6 +152,8 @@ export class PostsRepository {
         ...(params.attempts !== undefined && { attempts: params.attempts }),
         ...(params.errorMessage !== undefined && { errorMessage: params.errorMessage }),
         ...(params.publishedAt !== undefined && { publishedAt: params.publishedAt }),
+        ...(params.providerPostId !== undefined && { providerPostId: params.providerPostId }),
+        ...(params.providerRawResponse !== undefined && { providerRawResponse: params.providerRawResponse }),
       },
     });
   }

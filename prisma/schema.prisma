@@ -168,6 +168,8 @@ model PlatformPost {
   platform     Platform
   content      String             @db.Text
   mediaUrl     String?            @map("media_url") // Image or video URL for Instagram/Threads
+  providerPostId String?          @map("provider_post_id")
+  providerRawResponse Json?       @map("provider_raw_response")
   status       PlatformPostStatus @default(PENDING)
   publishedAt  DateTime?          @map("published_at")
   errorMessage String?            @map("error_message")

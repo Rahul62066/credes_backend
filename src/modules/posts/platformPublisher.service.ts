@@ -23,6 +23,7 @@ export interface PlatformPublishContext {
 }
 
 export interface PlatformPublishResult {
+  success?: boolean;
   providerPostId?: string;
   providerRaw?: unknown;
 }
@@ -71,6 +72,7 @@ export class PlatformPublisherService {
     }
 
     return {
+      success: true,
       providerPostId,
       providerRaw: body,
     };
@@ -131,6 +133,7 @@ export class PlatformPublisherService {
     }
 
     return {
+      success: true,
       providerPostId,
       providerRaw: body,
     };
@@ -224,6 +227,7 @@ export class PlatformPublisherService {
     }
 
     return {
+      success: true,
       providerPostId,
       providerRaw: publishBody,
     };
@@ -309,6 +313,7 @@ export class PlatformPublisherService {
     }
 
     return {
+      success: true,
       providerPostId,
       providerRaw: publishBody,
     };

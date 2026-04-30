@@ -103,7 +103,9 @@ function mapPostForApi(post: {
     errorMessage: string | null;
     attempts: number;
     publishedAt: Date | null;
-  }>;
+        providerPostId?: string | null;
+        providerRawResponse?: any | null;
+      }>;
 }) {
   return {
     id: post.id,
@@ -124,6 +126,8 @@ function mapPostForApi(post: {
       errorMessage: p.errorMessage,
       attempts: p.attempts,
       publishedAt: p.publishedAt,
+          provider_post_id: (p as any).providerPostId ?? null,
+          provider_raw_response: (p as any).providerRawResponse ?? null,
     })),
   };
 }

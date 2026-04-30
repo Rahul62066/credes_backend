@@ -734,7 +734,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"cmpostid\",\n      \"idea\": \"Announce new feature release\",\n      \"post_type\": \"announcement\",\n      \"tone\": \"professional\",\n      \"status\": \"published\",\n      \"platformPosts\": [\n        {\n          \"platform\": \"twitter\",\n          \"status\": \"published\"\n        }\n      ]\n    }\n  ],\n  \"meta\": {\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 10,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  },\n  \"error\": null\n}"
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"cmpostid\",\n      \"idea\": \"Announce new feature release\",\n      \"post_type\": \"announcement\",\n      \"tone\": \"professional\",\n      \"status\": \"published\",\n      \"platformPosts\": [\n        {\n          \"platform\": \"twitter\",\n          \"status\": \"published\",\n          \"provider_post_id\": \"1234567890\",\n          \"provider_raw_response\": null\n        }\n      ]\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 10,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"error\": null\n}"
             }
           ]
         },
@@ -764,7 +764,7 @@
               },
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"data\": {\n    \"id\": \"cmpostid\",\n    \"idea\": \"Announce new feature release\",\n    \"post_type\": \"announcement\",\n    \"tone\": \"professional\",\n    \"status\": \"published\",\n    \"platformPosts\": [\n      {\n        \"platform\": \"twitter\",\n        \"status\": \"published\",\n        \"publishedAt\": \"2026-04-30T08:35:00.000Z\"\n      }\n    ]\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+              "body": "{\n  \"data\": {\n    \"id\": \"cmpostid\",\n    \"idea\": \"Announce new feature release\",\n    \"post_type\": \"announcement\",\n    \"tone\": \"professional\",\n    \"status\": \"published\",\n    \"platformPosts\": [\n      {\n        \"platform\": \"twitter\",\n        \"status\": \"published\",\n        \"publishedAt\": \"2026-04-30T08:35:00.000Z\",\n        \"provider_post_id\": \"1234567890\",\n        \"provider_raw_response\": null\n      }\n    ]\n  },\n  \"meta\": null,\n  \"error\": null\n}"
             }
           ]
         }
