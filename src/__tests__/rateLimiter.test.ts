@@ -25,20 +25,28 @@ describe("Rate Limiter Middleware", () => {
     it("should allow requests within the limit", async () => {
       // Content generation is limited to 10 requests per 15 minutes
       // We should be able to make at least one request without hitting the limit
+      // Use a valid registered user to exercise rate limiter middleware
+      const unique = `user_${Date.now()}_${Math.floor(Math.random() * 1e6)}@test.com`;
+      const registerRes = await request(app).post("/api/auth/register").send({
+        email: unique,
+        password: "Password123!",
+        name: "Rate Test",
+      });
+      const token = registerRes.body.data.accessToken as string;
+
       const res = await request(app)
         .post("/api/content/generate")
-        .set("Authorization", "Bearer invalid-token")
+        .set("Authorization", `Bearer ${token}`)
         .send({
           idea: "test idea",
-          post_type: "short",
+          post_type: "announcement",
           platforms: ["twitter"],
           tone: "professional",
           model: "openai",
         });
 
-      // Auth will fail first (401) before rate limit is checked
-      // So this tests the middleware is wired but let's verify the key exists
-      expect(res.status).toBe(401);
+      // Should be validation or success (not auth failure)
+      expect([200, 201, 422]).toContain(res.status);
     });
 
     it("should track requests per authenticated user", async () => {

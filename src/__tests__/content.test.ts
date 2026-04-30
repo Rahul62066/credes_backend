@@ -4,6 +4,16 @@
 import request from "supertest";
 import { app } from "../app";
 
+// Helper to register a new user and return an access token
+async function registerAndGetToken() {
+  const unique = `user_${Date.now()}_${Math.floor(Math.random() * 1e6)}@test.com`;
+  const res = await request(app).post("/api/auth/register").send({
+    email: unique,
+    password: "Password123!",
+    name: "Test User",
+  });
+  return res.body.data.accessToken as string;
+}
 describe("POST /api/content/generate", () => {
   it("should reject request without auth", async () => {
     const res = await request(app)
@@ -23,9 +33,10 @@ describe("POST /api/content/generate", () => {
   });
 
   it("should reject empty idea", async () => {
+    const token = await registerAndGetToken();
     const res = await request(app)
       .post("/api/content/generate")
-      .set("Authorization", "Bearer invalid-token")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "",
         post_type: "announcement",
@@ -34,14 +45,14 @@ describe("POST /api/content/generate", () => {
         model: "openai",
       });
 
-    // Auth fails first (401) before validation
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 
   it("should reject idea longer than 500 chars via validation", async () => {
+    const token = await registerAndGetToken();
     const res = await request(app)
       .post("/api/content/generate")
-      .set("Authorization", "Bearer invalid-token")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "x".repeat(501),
         post_type: "announcement",
@@ -50,13 +61,14 @@ describe("POST /api/content/generate", () => {
         model: "openai",
       });
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 
   it("should reject invalid platform", async () => {
+    const token = await registerAndGetToken();
     const res = await request(app)
       .post("/api/content/generate")
-      .set("Authorization", "Bearer invalid-token")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "Some idea",
         post_type: "announcement",
@@ -65,14 +77,14 @@ describe("POST /api/content/generate", () => {
         model: "openai",
       });
 
-    // Auth fails first
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 
   it("should reject invalid model", async () => {
+    const token = await registerAndGetToken();
     const res = await request(app)
       .post("/api/content/generate")
-      .set("Authorization", "Bearer invalid-token")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "Some idea",
         post_type: "announcement",
@@ -81,13 +93,14 @@ describe("POST /api/content/generate", () => {
         model: "gemini",
       });
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 
   it("should reject empty platforms array", async () => {
+    const token = await registerAndGetToken();
     const res = await request(app)
       .post("/api/content/generate")
-      .set("Authorization", "Bearer invalid-token")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         idea: "Some idea",
         post_type: "announcement",
@@ -96,19 +109,22 @@ describe("POST /api/content/generate", () => {
         model: "openai",
       });
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 });
 
 // ── Validation-only tests (no auth needed) ───────────
 
-describe("POST /api/content/generate — validation without auth", () => {
-  it("should validate request body fields exist", async () => {
-    // Send request with NO body at all — no auth header
-    const res = await request(app).post("/api/content/generate").send({});
+describe("POST /api/content/generate — validation with auth", () => {
+  it("should validate request body fields exist when authenticated", async () => {
+    const token = await registerAndGetToken();
+    // Send request with NO body at all — with auth header
+    const res = await request(app)
+      .post("/api/content/generate")
+      .set("Authorization", `Bearer ${token}`)
+      .send({});
 
-    // Auth guard runs before validation, so we get 401
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(422);
   });
 });
 
