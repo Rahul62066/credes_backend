@@ -20,6 +20,7 @@ import { postsRoutes } from "./modules/posts";
 import { botRoutes } from "./modules/bot";
 import { dashboardRoutes } from "./modules/dashboard";
 import { whatsappRoutes } from "./modules/whatsapp";
+import { oauthRoutes } from "./modules/oauth";
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api/content", contentRoutes);
 app.use("/api/posts", postsRoutes);
 app.use("/api/bot", botRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/oauth", oauthRoutes);
 
 // ── Webhook routes ──────────────────────────────────
 app.use("/webhooks/whatsapp", whatsappRoutes);

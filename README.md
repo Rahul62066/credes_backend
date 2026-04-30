@@ -142,6 +142,31 @@ Bot webhooks
 - `POST /api/bot/telegram/webhook/:secret` — Telegram webhook (grammY)
 - `POST /webhooks/whatsapp/twilio` — WhatsApp webhook (Twilio)
 
+OAuth connection endpoints
+
+- `GET /api/oauth/twitter/connect` and `GET /api/oauth/twitter/callback`
+- `GET /api/oauth/linkedin/connect` and `GET /api/oauth/linkedin/callback`
+- `GET /api/oauth/meta/connect` and `GET /api/oauth/meta/callback`
+
+OAuth setup
+
+1. Set `APP_BASE_URL` to your backend URL.
+2. Add the callback URLs below in each provider console.
+3. Configure client IDs, client secrets, and redirect URIs in `.env`.
+
+Callback URLs to register:
+
+- Twitter/X: `/api/oauth/twitter/callback`
+- LinkedIn: `/api/oauth/linkedin/callback`
+- Meta / Instagram: `/api/oauth/meta/callback`
+
+Flow notes:
+
+- Connect routes require JWT auth and redirect to the provider authorization screen.
+- Callback routes validate state, exchange the code, fetch the profile, and upsert into `social_accounts` with encrypted tokens.
+- Successful callbacks return a small HTML success page instead of JSON.
+- Failed callbacks return a small HTML error page instead of JSON.
+
 For complete request/response examples, use the Postman collection (placeholder). I can add the collection file on request.
 
 ## Bot Setup
@@ -202,7 +227,7 @@ Unauthenticated routes are limited by IP. If Redis is unreachable, rate limiting
   - **Twitter/X & LinkedIn:** Text-only posts supported (OAuth tokens required)
   - **Instagram:** Requires image/video URL (`mediaUrl`); plain text posts not supported by Meta API
   - **Threads:** Supports text with optional image/video URL (`mediaUrl`); container creation required by Meta API
-- WhatsApp/Twilio and full OAuth flows (Twitter, LinkedIn) are under development.
+- WhatsApp/Twilio and some advanced social publishing flows are still under development.
 - If secrets (e.g., `TELEGRAM_BOT_TOKEN`, `TWILIO_AUTH_TOKEN`) were exposed in repo history, rotate them immediately.
 - Webhook signature verification should be enabled in production (`TELEGRAM_VERIFY_WEBHOOK=true`, `TWILIO_VERIFY_WEBHOOK=true`).
 

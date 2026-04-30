@@ -6,6 +6,7 @@ export const env = {
   // Server
   NODE_ENV: process.env.NODE_ENV || "development",
   PORT: parseInt(process.env.PORT || "5000", 10),
+  APP_BASE_URL: process.env.APP_BASE_URL || "",
 
   // Database
   DATABASE_URL: process.env.DATABASE_URL!,
@@ -37,6 +38,17 @@ export const env = {
   META_API_BASE_URL:
     process.env.META_API_BASE_URL || "https://graph.instagram.com",
   META_API_VERSION: process.env.META_API_VERSION || "v19.0",
+
+  // OAuth providers
+  TWITTER_CLIENT_ID: process.env.TWITTER_CLIENT_ID || "",
+  TWITTER_CLIENT_SECRET: process.env.TWITTER_CLIENT_SECRET || "",
+  TWITTER_REDIRECT_URI: process.env.TWITTER_REDIRECT_URI || "",
+  LINKEDIN_CLIENT_ID: process.env.LINKEDIN_CLIENT_ID || "",
+  LINKEDIN_CLIENT_SECRET: process.env.LINKEDIN_CLIENT_SECRET || "",
+  LINKEDIN_REDIRECT_URI: process.env.LINKEDIN_REDIRECT_URI || "",
+  META_CLIENT_ID: process.env.META_CLIENT_ID || "",
+  META_CLIENT_SECRET: process.env.META_CLIENT_SECRET || "",
+  META_REDIRECT_URI: process.env.META_REDIRECT_URI || "",
 
   // BullMQ
   BULL_QUEUE_PREFIX: process.env.BULL_QUEUE_PREFIX || "postly",
