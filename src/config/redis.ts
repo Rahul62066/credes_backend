@@ -78,22 +78,30 @@ class InMemoryRedis {
  * Shared Redis connection instance.
  * Use an in-memory stub during tests to avoid external dependency.
  */
-export const redis = env.isTest
-  ? (new InMemoryRedis() as unknown as Redis)
-  : new Redis(
-      redisConfig.url
-        ? redisConfig.url
-        : {
-            host: redisConfig.host,
-            port: redisConfig.port,
-            password: redisConfig.password,
-            tls: redisConfig.tls ? {} : undefined,
-          },
-      {
-        maxRetriesPerRequest: null, // Required by BullMQ
-        enableReadyCheck: false,
-      }
-    );
+let redisInstance: Redis;
+
+if (env.isTest) {
+  redisInstance = new InMemoryRedis() as unknown as Redis;
+} else if (redisConfig.url) {
+  redisInstance = new Redis(redisConfig.url, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  });
+} else {
+  const host = redisConfig.host ?? "localhost";
+  const port = redisConfig.port ?? 6379;
+
+  redisInstance = new Redis({
+    host,
+    port,
+    password: redisConfig.password,
+    tls: redisConfig.tls ? {} : undefined,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  });
+}
+
+export const redis = redisInstance;
 
 if (!env.isTest) {
   redis.on("connect", () => {
@@ -120,9 +128,12 @@ export function createRedisConnection(): Redis {
     });
   }
 
+  const host = redisConfig.host ?? "localhost";
+  const port = redisConfig.port ?? 6379;
+
   return new Redis({
-    host: redisConfig.host,
-    port: redisConfig.port,
+    host,
+    port,
     password: redisConfig.password,
     tls: redisConfig.tls ? {} : undefined,
     maxRetriesPerRequest: null,

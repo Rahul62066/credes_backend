@@ -7,7 +7,7 @@
 import { Worker, Job } from "bullmq";
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
-import { Platform, PlatformPostStatus, PostStatus } from "../../generated/prisma";
+import { Platform, PlatformPostStatus, PostStatus, Prisma } from "../../generated/prisma";
 import { postsRepository } from "../modules/posts/posts.repository";
 import { platformPublisherService } from "../modules/posts/platformPublisher.service";
 
@@ -83,7 +83,7 @@ export const postWorker = new Worker(
       publishedAt: new Date(),
       errorMessage: null,
       providerPostId: publishResult.providerPostId ?? null,
-      providerRawResponse: publishResult.providerRaw ?? null,
+      providerRawResponse: publishResult.providerRaw === null ? Prisma.DbNull : publishResult.providerRaw,
     });
 
     await postsRepository.recomputePostStatus(postId);

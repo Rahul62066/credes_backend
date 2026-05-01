@@ -8,7 +8,8 @@ import {
   PlatformPostStatus,
   PostType,
   Tone,
-  type Prisma,
+  Prisma,
+  type Prisma as PrismaTypes,
 } from "../../../generated/prisma";
 
 export class PostsRepository {
@@ -143,8 +144,11 @@ export class PostsRepository {
     errorMessage?: string | null;
     publishedAt?: Date | null;
     providerPostId?: string | null;
-    providerRawResponse?: Prisma.JsonValue | null;
+    providerRawResponse?: PrismaTypes.InputJsonValue | PrismaTypes.NullableJsonNullValueInput;
   }) {
+    const providerRawResponse =
+      params.providerRawResponse === null ? Prisma.DbNull : params.providerRawResponse;
+
     return prisma.platformPost.update({
       where: { id: params.platformPostId },
       data: {
@@ -153,7 +157,7 @@ export class PostsRepository {
         ...(params.errorMessage !== undefined && { errorMessage: params.errorMessage }),
         ...(params.publishedAt !== undefined && { publishedAt: params.publishedAt }),
         ...(params.providerPostId !== undefined && { providerPostId: params.providerPostId }),
-        ...(params.providerRawResponse !== undefined && { providerRawResponse: params.providerRawResponse }),
+        ...(params.providerRawResponse !== undefined && { providerRawResponse }),
       },
     });
   }
